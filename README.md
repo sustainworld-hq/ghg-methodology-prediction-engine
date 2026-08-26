@@ -40,6 +40,9 @@ dead references.
 | `assets/ui.js` | Everything on screen |
 | `assets/styles.css` | Plain white, one green accent |
 | `build.js` | Inlines it all into the standalone page |
+| `docs/METHODOLOGY-RULES.md` | **Source analysis.** Every rule traced to the standard that authorises it |
+| `tools/test-rules.js` | Headless regression harness — examples, references, ordering, determinism |
+| `tools/build-rules-doc.js` | Regenerates the source analysis from the rule data |
 
 The split matters: `engine.js` holds no DOM references and no globals, so you can test it
 headlessly, reuse it server-side, or swap the interface without touching the logic.
@@ -71,6 +74,28 @@ would unlock each method. Clicking one jumps to that field. Nothing is ever assu
 Every answer carries a record fingerprint (FNV-1a over the canonicalised input). Same data
 in, same fingerprint, same method out — every time. No model, no ranking, no randomness.
 The tables in `decision-tables.js` are the entire engine.
+
+---
+
+## Standards basis
+
+The rules were checked against the GHG Protocol documents on file. **21 of 31 methods
+are evidenced; 10 are not** — the documents governing most Scope 3 methods (Scope 3
+Standard, Scope 3 Technical Guidance, Scope 2 Guidance) have not been read against
+these tables. Every method carries its citation in `METHODOLOGY_SOURCES`, and the app
+shows it in the *All the rules* tab, flagging unverified ones.
+
+The priority ordering rests on one sentence, Corporate Standard p.44:
+
+> Companies should use the most accurate calculation approach available to them.
+
+`tools/test-rules.js` enforces that as an invariant: no table may offer a rougher
+method above a better one. Full analysis in [docs/METHODOLOGY-RULES.md](docs/METHODOLOGY-RULES.md).
+
+```bash
+node tools/test-rules.js        # regression harness, exit 1 on failure
+node tools/build-rules-doc.js   # regenerate the source analysis
+```
 
 ---
 

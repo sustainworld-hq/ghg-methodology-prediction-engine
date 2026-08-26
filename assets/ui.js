@@ -561,16 +561,27 @@ function renderLibrary() {
           '<div class="table-wrap">' + tableHTML(c, null, true) + '</div></section>';
       }).join('') : '<p class="empty">Nothing matches “' + esc(state.libSearch) + '”.</p>') +
 
-      '<section class="cat"><div class="cat-head"><h2>What each method means</h2></div>' +
+      '<section class="cat"><div class="cat-head"><h2>What each method means</h2>' +
+      '<span class="cat-meta">' + Object.keys(METHODOLOGIES).filter(function (k) {
+        return SOURCES[METHODOLOGIES[k].source.src].held;
+      }).length + ' of ' + Object.keys(METHODOLOGIES).length +
+      ' checked against a standard we hold</span></div>' +
       '<div class="table-wrap"><table class="dt"><thead><tr><th>Method</th><th>What it does</th>' +
-      '<th>Data quality</th></tr></thead><tbody>' +
+      '<th>Data quality</th><th>Comes from</th></tr></thead><tbody>' +
       Object.keys(METHODOLOGIES).map(function (k) {
-        var m = METHODOLOGIES[k];
+        var m = METHODOLOGIES[k], s = m.source, src = SOURCES[s.src];
+        var prov = src.held
+          ? '<span class="src ok" title="' + esc(s.note) + '">' + esc(src.short) + ' ' + esc(s.ref) + '</span>'
+          : '<span class="src todo" title="' + esc(s.note) + '">' + esc(src.short) + ' — not verified</span>';
         return '<tr><td class="c-meth"><b>' + esc(m.name) + '</b></td>' +
           '<td>' + esc(m.blurb) + '</td>' +
           '<td class="c-res"><span class="res">' + esc(m.tier === '—' ? '—' :
-            m.tier + ' · ' + m.confidence + ' confidence') + '</span></td></tr>';
-      }).join('') + '</tbody></table></div></section>' +
+            m.tier + ' · ' + m.confidence + ' confidence') + '</span></td>' +
+          '<td class="c-src">' + prov + '</td></tr>';
+      }).join('') + '</tbody></table></div>' +
+      '<p class="src-note">Hover a source to see the wording it rests on. ' +
+      '“Not verified” means the rule is defensible but the governing document has not been ' +
+      'read against these tables — see <code>docs/METHODOLOGY-RULES.md</code>.</p></section>' +
     '</div>';
 
   host.querySelectorAll('.filter').forEach(function (b) {

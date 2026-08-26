@@ -16,7 +16,9 @@ const REGISTRY = {
   version: 'v1.4.0',
   approved: '2026-04-18',
   owner: 'GHG Methodology Governance Board',
-  standard: 'GHG Protocol Corporate Standard + Scope 3 Standard (2011)'
+  /* Only the Corporate Standard has actually been read against these tables.
+     See docs/METHODOLOGY-RULES.md for what is and is not evidenced. */
+  standard: 'GHG Protocol Corporate Standard (2004), read. Scope 3 / Scope 2 guidance not yet verified.'
 };
 
 /* ------------------------------------------------------------- 1. FIELDS -- */
@@ -893,3 +895,68 @@ const CORE_FIELDS = [
   'distance', 'mode', 'fuelQuantity', 'fuelType',
   'energyConsumption', 'gridRegion', 'spend', 'contractualInstrument'
 ];
+
+/* ------------------------------------------------------ 6. PROVENANCE --- */
+/* Where each rule family comes from. Added after the tables so the tables
+   above stay readable, and so provenance can be revised without touching
+   the rules themselves.
+
+   held: true  = the source document is on file and was read directly
+   held: false = the family follows this source by reputation; the document
+                 has NOT been read here, so treat the citation as unverified. */
+
+const SOURCES = {
+  CORP:  { short: 'Corporate Standard', held: true,
+           title: 'GHG Protocol Corporate Accounting and Reporting Standard, Revised Edition (WRI/WBCSD, 2004)' },
+  PAS:   { short: 'Policy and Action Standard', held: true,
+           title: 'GHG Protocol Policy and Action Standard (WRI, 2014)' },
+  S3:    { short: 'Scope 3 Standard', held: false,
+           title: 'GHG Protocol Corporate Value Chain (Scope 3) Accounting and Reporting Standard (2011)' },
+  S3TG:  { short: 'Scope 3 Technical Guidance', held: false,
+           title: 'Technical Guidance for Calculating Scope 3 Emissions (2013)' },
+  S2:    { short: 'Scope 2 Guidance', held: false,
+           title: 'GHG Protocol Scope 2 Guidance (2015)' },
+  TOOLS: { short: 'GHG Protocol calculation tools', held: false,
+           title: 'GHG Protocol cross-sector and sector-specific calculation tools' }
+};
+
+/* Page numbers are PDF page numbers in the files that were read.
+   Anything pointing at a not-held source is a claim this repo cannot
+   currently evidence, and is labelled as such in the interface. */
+const METHODOLOGY_SOURCES = {
+  FUEL_BASED:     { src: 'CORP', ref: 'p.44', note: 'Scope 1 "calculated based on the purchased quantities of commercial fuels ... using published emission factors".' },
+  ENERGY_CONTENT: { src: 'CORP', ref: 'p.44', note: 'Fuel use data with default carbon content coefficients or periodic fuel sampling.' },
+  DIST_BASED:     { src: 'CORP', ref: 'p.44', note: 'Scope 3 "calculated from activity data such as fuel use or passenger miles".' },
+  VEH_DIST:       { src: 'PAS',  ref: 'Table 8.6, p.87', note: 'Activity data "kilometers of distance traveled" against a per-km factor.' },
+  LOC_BASED:      { src: 'CORP', ref: 'p.44', note: 'Scope 2 from metered consumption and "local grid, or other published emission factors".' },
+  MKT_BASED:      { src: 'S2',   ref: 'Scope 2 Guidance', note: 'Corporate Standard p.44 admits "supplier-specific" factors, but the market-based method and dual reporting come from the 2015 Scope 2 Guidance, which is not held.' },
+  SUPPLIER_SPEC:  { src: 'CORP', ref: 'p.44', note: '"If source- or facility-specific emission factors are available, they are preferable to more generic or general emission factors."' },
+  MAT_BALANCE:    { src: 'CORP', ref: 'p.44', note: '"Emissions may be calculated based on a mass balance or stoichiometric basis specific to a facility or process."' },
+  PROC_MASS:      { src: 'CORP', ref: 'p.44', note: 'Mass-balance basis. Process emissions is a named Scope 1 source category (p.43).' },
+  PROC_STOICH:    { src: 'CORP', ref: 'p.44', note: 'Stoichiometric basis, same sentence.' },
+  SCREEN_LEAK:    { src: 'CORP', ref: 'p.43', note: 'Fugitive emissions is a named Scope 1 source category; HFC use in refrigeration is a listed cross-sector calculation tool (p.44).' },
+  SCREEN_SIMPLE:  { src: 'PAS',  ref: 'Table 8.5, p.85', note: 'Lowest accuracy level: international default values.' },
+  AVG_MASS:       { src: 'PAS',  ref: 'Table 8.6, p.87', note: 'Activity data "kilograms of material consumed".' },
+  AVG_DATA:       { src: 'PAS',  ref: 'Table 8.5, p.85', note: 'Intermediate accuracy level: national average values.' },
+  WASTE_TYPE:     { src: 'PAS',  ref: 'Table 8.6, p.87', note: 'Activity data "kilograms of waste generated".' },
+  WASTE_TREAT:    { src: 'PAS',  ref: 'Table 8.6, p.87', note: 'Same activity data with an average-composition factor.' },
+  FLOOR_AREA:     { src: 'PAS',  ref: 'Table 8.6, p.87', note: 'Activity data "square meters of area occupied".' },
+  VOL_WATER:      { src: 'CORP', ref: 'p.43', note: 'Fugitive emissions from wastewater treatment is a named source; water in the value chain follows the Scope 3 indicative list (p.31).' },
+  ASSET_SPEC:     { src: 'CORP', ref: 'p.31', note: 'Leased assets, franchises and outsourced activities are named Scope 3 activities.' },
+  WTT_FUEL:       { src: 'CORP', ref: 'p.31', note: '"Extraction, production, and transportation of fuels consumed in the generation of electricity."' },
+  TD_LOSS:        { src: 'CORP', ref: 'p.31', note: '"Generation of electricity that is consumed in a T&D system (reported by end-user)."' },
+  SPEND_BASED:    { src: 'S3TG', ref: 'not held', note: 'Neither document held supports a monetary proxy. Spend-based methods come from the Scope 3 Technical Guidance.' },
+  EEIO:           { src: 'S3TG', ref: 'not held', note: 'EEIO screening is a Scope 3 Technical Guidance method, absent from both documents held.' },
+  WT_DIST:        { src: 'S3TG', ref: 'not held', note: 'The Corporate Standard names transport of purchased goods (p.31) but gives no tonne-kilometre method.' },
+  NIGHT_BASED:    { src: 'S3TG', ref: 'not held', note: 'Accommodation averages are not in either document held.' },
+  USE_DIRECT:     { src: 'S3',   ref: 'Category 11', note: 'Corporate Standard names "use of sold products and services" (p.31) but prescribes no method.' },
+  USE_FUEL:       { src: 'S3',   ref: 'Category 11', note: 'As above.' },
+  SITE_PROC:      { src: 'S3',   ref: 'Category 10', note: 'Processing of sold products is not named in either document held.' },
+  INVEST_SPEC:    { src: 'S3',   ref: 'Category 15', note: 'Investments do not appear in the Corporate Standard Scope 3 list (p.31). PCAF is the working reference.' },
+  ECON_ALLOC:     { src: 'S3',   ref: 'Category 15', note: 'As above.' },
+  INSUFFICIENT:   { src: 'CORP', ref: 'p.44', note: 'The standard requires the most accurate approach available to the company. It nowhere authorises a default when no approach applies.' }
+};
+
+Object.keys(METHODOLOGY_SOURCES).forEach(function (k) {
+  if (METHODOLOGIES[k]) METHODOLOGIES[k].source = METHODOLOGY_SOURCES[k];
+});
