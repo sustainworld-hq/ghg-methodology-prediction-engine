@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Methodology Prediction Engine</title>
+<meta name="description" content="SustainGHG: tells you which GHG calculation method applies to an activity record, and why.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <span class="brand">
+      <span class="brand-mark" data-ico="leaf" data-size="16"></span>
+      <span class="brand-name">SustainGHG</span>
+    </span>
+    <nav class="tabs" role="tablist" aria-label="Views">
+      <button class="tab" type="button" role="tab" data-tab="find" aria-selected="true">Find a method</button>
+      <button class="tab" type="button" role="tab" data-tab="library" aria-selected="false">All the rules</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<div id="findView">
+  <div class="page">
+
+    <section class="intro">
+      <h1>Which calculation method should we use?</h1>
+      <p>Tell us what you know about an activity. We check it against the rules for that
+         kind of activity and tell you which method applies — and exactly why.</p>
+    </section>
+
+    <section class="card" id="examplesCard">
+      <div class="card-head">
+        <h2>Start with an example</h2>
+        <button class="link" type="button" id="moreExamples">Show all examples</button>
+      </div>
+      <div class="examples" id="scenarioGrid"></div>
+    </section>
+
+    <section class="card" id="inputCard">
+      <div class="card-head"><h2>Or describe the activity yourself</h2></div>
+      <div id="formBody"></div>
+
+      <div class="stale" id="staleNote" hidden>
+        <span data-ico="info" data-size="15"></span>
+        <span>You changed something, so the previous answer no longer applies. Run it again.</span>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" type="button" id="predictBtn">Find the method</button>
+        <button class="btn btn-quiet" type="button" id="resetBtn">Start over</button>
+      </div>
+    </section>
+
+    <div id="output"></div>
+
+  </div>
+</div>
+
+<div id="libraryView" hidden></div>
+
+</main>
+
+<footer class="pagefoot">
+  <div class="page">
+    <p class="foot-lead">This tool only picks the <b>method</b>. It does not choose an emission
+       factor and it does not calculate emissions — those come later, in separate steps.</p>
+    <ul class="foot-points">
+      <li>Same answer every time, for the same data</li>
+      <li>Every answer traces back to a written rule</li>
+      <li>Nothing is ever filled in or assumed for you</li>
+    </ul>
+    <p class="foot-meta" id="footMeta"></p>
+  </div>
+</footer>
+
+<script src="assets/decision-tables.js"></script>
+<script src="assets/engine.js"></script>
+<script src="assets/ui.js"></script>
+</body>
+</html>

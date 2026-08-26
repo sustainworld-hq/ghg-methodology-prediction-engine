@@ -1,0 +1,2328 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Methodology Prediction Engine</title>
+<meta name="description" content="SustainGHG: tells you which GHG calculation method applies to an activity record, and why.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* ==========================================================================
+   SustainGHG - Methodology Prediction Engine
+   Plain white, one green accent, generous spacing, big touch targets.
+   Light only, deliberately - every colour is painted, nothing inherited.
+   ========================================================================== */
+
+:root {
+  --paper:   #FFFFFF;
+  --wash:    #F7F8F7;
+  --ink:     #16181B;
+  --ink-2:   #5C646B;
+  --ink-3:   #949BA1;
+  --line:    #E6E8E6;
+  --line-2:  #D2D6D2;
+
+  --green:      #0E6B4A;
+  --green-dark: #0A5439;
+  --green-wash: #F1F8F4;
+  --green-line: #BEDCCC;
+
+  --amber:      #8A5A0B;
+  --amber-wash: #FDF8EF;
+  --amber-line: #EBD9B8;
+
+  --red:      #B3261E;
+  --red-wash: #FDF4F3;
+  --red-line: #EDC7C3;
+
+  --sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --r: 8px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--wash);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -.015em; text-wrap: balance; }
+p, ul, ol { margin: 0; }
+:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 4px; }
+
+.page { max-width: 720px; margin: 0 auto; padding: 0 20px; }
+.page.wide { max-width: 1000px; }
+
+/* -------------------------------------------------------------- topbar --- */
+
+.topbar { background: var(--paper); border-bottom: 1px solid var(--line); }
+.topbar-inner {
+  max-width: 1000px; margin: 0 auto; padding: 0 20px;
+  height: 58px; display: flex; align-items: center; gap: 26px;
+}
+.brand { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.brand-mark { color: var(--green); display: flex; }
+.brand-name { font-size: 15px; }
+
+.tabs { display: flex; gap: 22px; }
+.tab {
+  appearance: none; background: none; border: 0; cursor: pointer; font: inherit;
+  font-size: 14px; color: var(--ink-2); padding: 19px 0 17px;
+  border-bottom: 2px solid transparent;
+}
+.tab:hover { color: var(--ink); }
+.tab[aria-selected="true"] { color: var(--ink); font-weight: 500; border-bottom-color: var(--green); }
+
+/* --------------------------------------------------------------- intro --- */
+
+.intro { padding: 44px 0 26px; }
+.intro h1 { font-size: 27px; line-height: 1.25; }
+.intro p { color: var(--ink-2); margin-top: 10px; max-width: 60ch; }
+.intro .stats { margin-top: 14px; font-size: 14px; color: var(--ink-2); }
+.intro .stats b { color: var(--ink); }
+
+/* ---------------------------------------------------------------- card --- */
+
+.card {
+  background: var(--paper); border: 1px solid var(--line);
+  border-radius: var(--r); padding: 22px; margin-bottom: 18px;
+}
+.card-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 16px; }
+.card-head h2 { font-size: 16px; }
+.link {
+  appearance: none; background: none; border: 0; cursor: pointer; font: inherit;
+  font-size: 13.5px; color: var(--green); margin-left: auto; padding: 0;
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.link:hover { color: var(--green-dark); }
+
+/* ------------------------------------------------------------ examples --- */
+
+.examples { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.example {
+  appearance: none; font: inherit; text-align: left; cursor: pointer;
+  background: var(--paper); border: 1px solid var(--line-2); border-radius: var(--r);
+  padding: 13px 15px; display: flex; flex-direction: column; gap: 4px;
+  transition: border-color .14s, background .14s;
+}
+.example:hover { border-color: var(--green); background: var(--green-wash); }
+.example[aria-pressed="true"] { border-color: var(--green); background: var(--green-wash); box-shadow: inset 0 0 0 1px var(--green); }
+.example-name { font-size: 14px; font-weight: 600; line-height: 1.35; }
+.example-desc { font-size: 12.5px; color: var(--ink-2); line-height: 1.45; }
+.example-out {
+  font-size: 12.5px; color: var(--green); display: inline-flex; align-items: center;
+  gap: 4px; margin-top: 3px; font-weight: 500;
+}
+.example-out.warn { color: var(--amber); }
+
+/* ---------------------------------------------------------------- form --- */
+
+.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 15px 16px; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field-label { font-size: 13.5px; font-weight: 500; color: var(--ink); }
+.field-sm .field-label { font-size: 13px; font-weight: 400; color: var(--ink-2); }
+
+.field-block { margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--line); }
+.field-block.quiet { opacity: .9; }
+.block-hint { font-size: 13px; color: var(--ink-2); margin-bottom: 14px; max-width: 62ch; }
+
+input[type="text"], input[type="number"], input[type="search"], select {
+  font: inherit; font-size: 14.5px; color: var(--ink);
+  background: var(--paper); border: 1px solid var(--line-2);
+  border-radius: 6px; padding: 9px 11px; width: 100%; height: 40px;
+  transition: border-color .14s, box-shadow .14s;
+}
+input:hover, select:hover { border-color: var(--ink-3); }
+input:focus, select:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px var(--green-wash); }
+select {
+  appearance: none; padding-right: 30px; cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: right 14px center, right 9px center;
+  background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
+}
+.pair { display: grid; grid-template-columns: 1fr 118px; gap: 7px; }
+
+.actions { display: flex; align-items: center; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+
+.btn {
+  appearance: none; font: inherit; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 11px 18px; border-radius: 6px; font-size: 14.5px; font-weight: 500;
+  border: 1px solid var(--line-2); background: var(--paper); color: var(--ink);
+  transition: border-color .14s, background .14s;
+}
+.btn:hover { border-color: var(--ink-3); }
+.btn-primary { background: var(--green); border-color: var(--green); color: #fff; padding: 12px 26px; font-size: 15px; }
+.btn-primary:hover { background: var(--green-dark); border-color: var(--green-dark); }
+.btn-quiet { border-color: transparent; color: var(--ink-2); background: none; }
+.btn-quiet:hover { color: var(--ink); border-color: var(--line-2); }
+.btn-sm { padding: 7px 12px; font-size: 13px; }
+
+.stale {
+  display: flex; gap: 9px; align-items: flex-start; margin-top: 20px;
+  background: var(--amber-wash); border: 1px solid var(--amber-line);
+  border-radius: 6px; padding: 11px 13px; font-size: 13.5px; color: var(--ink-2);
+}
+.stale > span:first-child { color: var(--amber); display: flex; padding-top: 2px; }
+
+/* ------------------------------------------------------------ progress --- */
+
+.progress {
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--r);
+  padding: 18px 22px; margin-bottom: 18px;
+}
+.prog-row { display: flex; align-items: center; gap: 11px; padding: 6px 0; font-size: 14.5px; color: var(--ink-2); }
+.prog-ico { display: flex; width: 16px; justify-content: center; color: var(--ink-3); }
+.prog-row.good { color: var(--ink); }
+.prog-row.good .prog-ico { color: var(--green); }
+.prog-row.bad { color: var(--red); }
+.prog-row.bad .prog-ico { color: var(--red); }
+.spinner {
+  width: 12px; height: 12px; border-radius: 50%;
+  border: 2px solid var(--line-2); border-top-color: var(--ink-3); animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* -------------------------------------------------------------- answer --- */
+
+.answer {
+  background: var(--paper); border: 1px solid var(--green-line);
+  border-radius: var(--r); padding: 30px 26px 26px; text-align: center;
+  animation: pop .3s ease;
+}
+@keyframes pop { from { opacity: 0; transform: translateY(6px); } }
+.answer.warn { border-color: var(--amber-line); }
+.answer.bad  { border-color: var(--red-line); }
+
+.answer-mark {
+  width: 46px; height: 46px; border-radius: 50%; margin: 0 auto 16px;
+  display: grid; place-items: center;
+  background: var(--green-wash); color: var(--green); border: 1px solid var(--green-line);
+}
+.answer.warn .answer-mark { background: var(--amber-wash); color: var(--amber); border-color: var(--amber-line); }
+.answer.bad  .answer-mark { background: var(--red-wash); color: var(--red); border-color: var(--red-line); }
+
+.answer-lead { font-size: 14px; color: var(--ink-2); }
+.answer-name { font-size: 30px; line-height: 1.15; margin-top: 4px; color: var(--green); }
+.answer-name.small { font-size: 22px; color: var(--ink); }
+.answer.bad .answer-name { color: var(--red); }
+.answer-why {
+  font-size: 15px; color: var(--ink-2); line-height: 1.65;
+  max-width: 54ch; margin: 14px auto 0;
+}
+.answer-why b { color: var(--ink); font-weight: 600; }
+
+.answer-facts {
+  display: flex; justify-content: center; flex-wrap: wrap; gap: 0;
+  margin-top: 24px; border: 1px solid var(--line); border-radius: 6px; overflow: hidden;
+}
+.fact { flex: 1 1 150px; padding: 12px 14px; border-right: 1px solid var(--line); }
+.fact:last-child { border-right: 0; }
+.fact-k { display: block; font-size: 12px; color: var(--ink-3); }
+.fact-v { display: block; font-size: 14.5px; font-weight: 600; margin-top: 2px; }
+
+.answer-tier {
+  margin-top: 14px; font-size: 13.5px; color: var(--ink-2);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.answer-tier svg { color: var(--ink-3); flex: none; }
+.answer-actions { display: flex; justify-content: center; gap: 10px; margin-top: 26px; flex-wrap: wrap; }
+
+.fixlist, .optionlist { list-style: none; padding: 0; margin: 20px auto 0; max-width: 46ch; text-align: left; }
+.fixlist li {
+  font-size: 14px; color: var(--ink-2); background: var(--red-wash);
+  border: 1px solid var(--red-line); border-radius: 6px; padding: 10px 13px; margin-bottom: 8px;
+}
+.optionlist li { margin-bottom: 8px; }
+.optbtn {
+  appearance: none; font: inherit; cursor: pointer; width: 100%; text-align: left;
+  display: flex; align-items: center; gap: 10px;
+  background: var(--paper); border: 1px solid var(--line-2); border-radius: 6px; padding: 12px 14px;
+  transition: border-color .14s, background .14s;
+}
+.optbtn:hover { border-color: var(--green); background: var(--green-wash); }
+.opt-need { font-size: 14px; font-weight: 600; }
+.opt-arrow { color: var(--ink-3); display: flex; }
+.opt-meth { font-size: 13.5px; color: var(--ink-2); margin-left: auto; }
+
+/* ------------------------------------------------------------- details --- */
+
+.details { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r); margin-top: 14px; }
+.details > summary {
+  list-style: none; cursor: pointer; padding: 15px 22px;
+  display: flex; align-items: center; gap: 10px; font-size: 14.5px; font-weight: 500;
+}
+.details > summary::-webkit-details-marker { display: none; }
+.details > summary:hover { color: var(--green); }
+.sum-caret { margin-left: auto; color: var(--ink-3); display: flex; transition: transform .18s; }
+.details[open] .sum-caret { transform: rotate(180deg); }
+.details-body { padding: 4px 22px 24px; border-top: 1px solid var(--line); }
+
+.det-block { padding-top: 22px; }
+.det-block h3 { font-size: 14.5px; margin-bottom: 8px; }
+.det-note { font-size: 13.5px; color: var(--ink-2); margin-bottom: 12px; max-width: 62ch; }
+.det-note svg { color: var(--ink-3); vertical-align: -2px; }
+
+.checklist { list-style: none; padding: 0; }
+.checklist li {
+  display: flex; align-items: center; gap: 9px; padding: 7px 0;
+  border-bottom: 1px solid var(--line); font-size: 14px;
+}
+.checklist li:last-child { border-bottom: 0; }
+.checklist li svg { color: var(--green); flex: none; }
+.checklist li.warn svg { color: var(--amber); }
+.checklist li.fail svg { color: var(--red); }
+.checklist li em { margin-left: auto; font-style: normal; font-size: 12.5px; color: var(--ink-3); }
+
+.rulelist { list-style: none; padding: 0; }
+.rulelist li {
+  display: flex; align-items: flex-start; gap: 10px; padding: 11px 12px;
+  border: 1px solid var(--line); border-radius: 6px; margin-bottom: 7px; font-size: 14px;
+}
+.rulelist li.hit { border-color: var(--green-line); background: var(--green-wash); }
+.rulelist .rl-ico { display: flex; padding-top: 3px; color: var(--ink-3); }
+.rulelist li.hit .rl-ico { color: var(--green); }
+.rulelist li.miss .rl-ico { color: var(--red); }
+.rulelist li.lower .rl-ico { color: var(--amber); }
+.rl-main { display: flex; flex-direction: column; min-width: 0; }
+.rl-why { font-size: 13px; color: var(--ink-2); }
+.rl-verdict { margin-left: auto; font-size: 12.5px; color: var(--ink-2); white-space: nowrap; padding-top: 2px; }
+.rulelist li.hit .rl-verdict { color: var(--green); font-weight: 600; }
+
+.trace { margin: 0; padding-left: 20px; }
+.trace li { font-size: 13.5px; padding: 4px 0; color: var(--ink-2); }
+.trace li .tr-t { color: var(--ink); }
+.trace li .tr-v { display: block; color: var(--ink-2); }
+.trace li.ok::marker { color: var(--green); }
+.trace li.no::marker { color: var(--red); }
+
+.det-foot {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line);
+}
+.det-meta { font-size: 12.5px; color: var(--ink-3); }
+.det-foot .btn { margin-left: auto; }
+
+/* --------------------------------------------------------------- table --- */
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; }
+table.dt { width: 100%; border-collapse: collapse; font-size: 13.5px; min-width: 540px; }
+table.dt th {
+  text-align: left; font-size: 12px; font-weight: 500; color: var(--ink-3);
+  padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--wash); white-space: nowrap;
+}
+table.dt td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.dt tr:last-child td { border-bottom: 0; }
+table.dt tr.is-hit { background: var(--green-wash); }
+table.dt tr.is-dim td { color: var(--ink-3); }
+.c-pri { width: 56px; color: var(--ink-3); }
+.c-meth { width: 180px; }
+.c-res { width: 128px; }
+.needs { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.need { font-size: 13px; color: var(--ink-2); }
+.need.ok { color: var(--green); font-weight: 600; }
+.need.miss { color: var(--red); }
+.need-plus { color: var(--ink-3); font-size: 12px; }
+.rule-note { font-size: 12.5px; color: var(--ink-3); margin-top: 5px; max-width: 54ch; }
+.res { font-size: 12.5px; color: var(--ink-3); }
+.res.ok { color: var(--green); font-weight: 600; }
+.res.low { color: var(--amber); }
+.res.no { color: var(--red); }
+
+/* ------------------------------------------------------------- library --- */
+
+.lib-bar { display: flex; gap: 12px; align-items: center; margin-bottom: 22px; flex-wrap: wrap; }
+.lib-bar input { max-width: 340px; }
+.filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter {
+  appearance: none; font: inherit; font-size: 13.5px; cursor: pointer;
+  padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line-2);
+  background: var(--paper); color: var(--ink-2);
+}
+.filter:hover { border-color: var(--ink-3); color: var(--ink); }
+.filter[aria-pressed="true"] { background: var(--green); border-color: var(--green); color: #fff; }
+
+.cat { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; margin-bottom: 16px; }
+.cat-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 14px; flex-wrap: wrap; }
+.cat-head h2 { font-size: 16px; }
+.cat-meta { font-size: 13px; color: var(--ink-3); margin-left: auto; }
+.empty { color: var(--ink-2); padding: 30px 0; }
+
+/* -------------------------------------------------------------- footer --- */
+
+.pagefoot { border-top: 1px solid var(--line); margin-top: 46px; padding: 30px 0 46px; background: var(--paper); }
+.foot-lead { font-size: 14px; color: var(--ink-2); max-width: 62ch; }
+.foot-lead b { color: var(--ink); font-weight: 600; }
+.foot-points { list-style: none; padding: 0; display: flex; gap: 24px; flex-wrap: wrap; margin-top: 16px; }
+.foot-points li { font-size: 13.5px; color: var(--ink-2); position: relative; padding-left: 16px; }
+.foot-points li::before {
+  content: ""; position: absolute; left: 0; top: 9px;
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+}
+.foot-meta { font-size: 12.5px; color: var(--ink-3); margin-top: 20px; }
+
+/* ---------------------------------------------------------- responsive --- */
+
+@media (max-width: 640px) {
+  .intro { padding: 30px 0 20px; }
+  .intro h1 { font-size: 23px; }
+  .card { padding: 18px; }
+  .answer { padding: 26px 18px 22px; }
+  .answer-name { font-size: 25px; }
+  .details-body, .details > summary { padding-left: 16px; padding-right: 16px; }
+  .examples { grid-template-columns: 1fr; }
+  .rl-verdict { display: none; }
+  .topbar-inner { gap: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important; animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important; scroll-behavior: auto !important;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <span class="brand">
+      <span class="brand-mark" data-ico="leaf" data-size="16"></span>
+      <span class="brand-name">SustainGHG</span>
+    </span>
+    <nav class="tabs" role="tablist" aria-label="Views">
+      <button class="tab" type="button" role="tab" data-tab="find" aria-selected="true">Find a method</button>
+      <button class="tab" type="button" role="tab" data-tab="library" aria-selected="false">All the rules</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<div id="findView">
+  <div class="page">
+
+    <section class="intro">
+      <h1>Which calculation method should we use?</h1>
+      <p>Tell us what you know about an activity. We check it against the rules for that
+         kind of activity and tell you which method applies — and exactly why.</p>
+    </section>
+
+    <section class="card" id="examplesCard">
+      <div class="card-head">
+        <h2>Start with an example</h2>
+        <button class="link" type="button" id="moreExamples">Show all examples</button>
+      </div>
+      <div class="examples" id="scenarioGrid"></div>
+    </section>
+
+    <section class="card" id="inputCard">
+      <div class="card-head"><h2>Or describe the activity yourself</h2></div>
+      <div id="formBody"></div>
+
+      <div class="stale" id="staleNote" hidden>
+        <span data-ico="info" data-size="15"></span>
+        <span>You changed something, so the previous answer no longer applies. Run it again.</span>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" type="button" id="predictBtn">Find the method</button>
+        <button class="btn btn-quiet" type="button" id="resetBtn">Start over</button>
+      </div>
+    </section>
+
+    <div id="output"></div>
+
+  </div>
+</div>
+
+<div id="libraryView" hidden></div>
+
+</main>
+
+<footer class="pagefoot">
+  <div class="page">
+    <p class="foot-lead">This tool only picks the <b>method</b>. It does not choose an emission
+       factor and it does not calculate emissions — those come later, in separate steps.</p>
+    <ul class="foot-points">
+      <li>Same answer every time, for the same data</li>
+      <li>Every answer traces back to a written rule</li>
+      <li>Nothing is ever filled in or assumed for you</li>
+    </ul>
+    <p class="foot-meta" id="footMeta"></p>
+  </div>
+</footer>
+
+<script>
+/* ==========================================================================
+   SustainGHG - Governed Decision Table Library
+   --------------------------------------------------------------------------
+   This file is DATA, not logic. It is the artefact a methodology governance
+   board reviews, versions and approves. The engine in app.js reads it and
+   does nothing that is not written here - no defaults, no inference.
+
+   Structure
+     FIELDS         field dictionary: every input the engine can read
+     METHODOLOGIES  the closed set of outcomes the engine may predict
+     CATEGORIES     one governed decision table per activity category
+     SCENARIOS      pre-loaded activity records for demonstration
+   ========================================================================== */
+
+const REGISTRY = {
+  version: 'v1.4.0',
+  approved: '2026-04-18',
+  owner: 'GHG Methodology Governance Board',
+  standard: 'GHG Protocol Corporate Standard + Scope 3 Standard (2011)'
+};
+
+/* ------------------------------------------------------------- 1. FIELDS -- */
+/* short  : label used inside decision-table rules
+   kind   : number | text | select
+   unitOf : id of the companion unit field rendered beside it
+   dim    : unit dimension, checked during validation
+   dict   : plain-English definition shown in the Field Dictionary          */
+
+const FIELDS = {
+  /* --- context ---------------------------------------------------------- */
+  activityCategory: {
+    label: 'Activity Category', short: 'Category', kind: 'select', context: true,
+    dict: 'Selects which governed decision table the engine loads. Drives everything downstream.'
+  },
+  activityType: {
+    label: 'Activity Type / Template', short: 'Template', kind: 'select', context: true,
+    dict: 'Data-entry template within a category. Narrows the expected inputs; does not change rule priority.'
+  },
+  reportingYear: {
+    label: 'Reporting Year', short: 'Year', kind: 'select', context: true,
+    options: ['2021', '2022', '2023', '2024', '2025', '2026', '2027'],
+    dict: 'Inventory year the record belongs to. Must fall inside the open reporting window.'
+  },
+  country: {
+    label: 'Country', short: 'Country', kind: 'select', context: true,
+    options: ['India', 'United States', 'United Kingdom', 'Germany', 'Singapore',
+              'United Arab Emirates', 'Australia', 'Japan', 'Brazil', 'Other / Global'],
+    dict: 'Geography of the activity. Used by rules that require a country-resolved dataset.'
+  },
+  region: {
+    label: 'Region / State', short: 'Region', kind: 'text', context: true,
+    placeholder: 'e.g. Tamil Nadu',
+    dict: 'Sub-national location. Informational unless a rule names it explicitly.'
+  },
+
+  /* --- distance --------------------------------------------------------- */
+  distance: {
+    label: 'Distance', short: 'Distance', kind: 'number', unitOf: 'distanceUnit', placeholder: '0',
+    dict: 'Measured or booked travel distance for the activity.'
+  },
+  distanceUnit: {
+    label: 'Distance Unit', short: 'Distance Unit', kind: 'select', dim: 'distance',
+    options: ['km', 'passenger.km', 'tonne.km', 'vehicle.km', 'miles'],
+    dict: 'Unit of the distance value. Must be a distance dimension.'
+  },
+  mode: {
+    label: 'Mode', short: 'Mode', kind: 'select',
+    options: ['Air — Short Haul (<1,600 km)', 'Air — Medium Haul', 'Air — Long Haul (>3,700 km)',
+              'Rail — Intercity', 'Rail — Metro / Suburban', 'Road — Car (Petrol)', 'Road — Car (Diesel)',
+              'Road — Car (Battery Electric)', 'Road — Taxi', 'Road — Bus / Coach',
+              'Road — Two-wheeler', 'Sea — Ferry'],
+    dict: 'Transport mode. Determines which distance-based dataset family applies.'
+  },
+
+  /* --- fuel ------------------------------------------------------------- */
+  fuelQuantity: {
+    label: 'Fuel Quantity', short: 'Fuel Quantity', kind: 'number', unitOf: 'fuelUnit', placeholder: '0',
+    dict: 'Volume or mass of fuel purchased or combusted in the period.'
+  },
+  fuelUnit: {
+    label: 'Fuel Unit', short: 'Fuel Unit', kind: 'select', dim: 'fuel',
+    options: ['litre', 'kg', 'm³', 'GJ', 'gallon (US)'],
+    dict: 'Unit of the fuel quantity. Must be a volume, mass or energy dimension.'
+  },
+  fuelType: {
+    label: 'Fuel Type', short: 'Fuel Type', kind: 'select',
+    options: ['Diesel', 'Petrol / Gasoline', 'CNG', 'LPG', 'Jet Kerosene (Jet A-1)', 'Aviation Gasoline',
+              'Natural Gas', 'Coal — Bituminous', 'Furnace Oil / HFO', 'Biodiesel (B20)', 'Ethanol (E10)'],
+    dict: 'Fuel product combusted. Without it a fuel quantity cannot be resolved to a methodology.'
+  },
+
+  /* --- energy ----------------------------------------------------------- */
+  energyConsumption: {
+    label: 'Energy Consumption', short: 'Energy', kind: 'number', unitOf: 'energyUnit', placeholder: '0',
+    dict: 'Metered energy delivered to the reporting boundary.'
+  },
+  energyUnit: {
+    label: 'Energy Unit', short: 'Energy Unit', kind: 'select', dim: 'energy',
+    options: ['kWh', 'MWh', 'GJ', 'MMBtu'],
+    dict: 'Unit of the energy value. Must be an energy dimension.'
+  },
+  gridRegion: {
+    label: 'Grid Region', short: 'Grid Region', kind: 'select',
+    options: ['Southern Region (SR)', 'Northern Region (NR)', 'Western Region (WR)',
+              'Eastern Region (ER)', 'North-Eastern Region (NER)', 'All India (National Grid)',
+              'UK — National Grid', 'US — WECC', 'US — RFC', 'EU — ENTSO-E', 'Other'],
+    dict: 'Grid balancing area the electricity was drawn from. Required by every location-based rule.'
+  },
+  contractualInstrument: {
+    label: 'Contractual Instrument', short: 'Contractual Instrument', kind: 'select',
+    options: ['I-REC (India)', 'REC (United States)', 'Guarantee of Origin (EU)', 'PPA — Physical',
+              'PPA — Virtual', 'Supplier green tariff', 'Residual mix (no instrument claimed)'],
+    dict: 'Energy attribute certificate or contract backing the electricity claim. Required by every market-based rule.'
+  },
+
+  /* --- financial -------------------------------------------------------- */
+  spend: {
+    label: 'Spend', short: 'Spend', kind: 'number', unitOf: 'currency', placeholder: '0',
+    dict: 'Procurement value of the activity, net of taxes. Lowest-priority input in every table that accepts it.'
+  },
+  currency: {
+    label: 'Currency', short: 'Currency', kind: 'select', dim: 'currency',
+    options: ['INR', 'USD', 'EUR', 'GBP', 'SGD', 'AED', 'AUD', 'JPY', 'BRL'],
+    dict: 'ISO currency of the spend value. A spend without a currency cannot be matched.'
+  },
+  sectorCode: {
+    label: 'EEIO Sector', short: 'Sector', kind: 'select',
+    options: ['Air transport', 'Land transport & pipelines', 'Accommodation & food service',
+              'Machinery & equipment mfg', 'Basic metals', 'Chemicals & chemical products',
+              'Construction', 'Professional services', 'Food & beverage mfg',
+              'IT & telecom services', 'Financial services'],
+    dict: 'Environmentally-extended input-output sector used to interpret a spend value.'
+  },
+
+  /* --- freight ---------------------------------------------------------- */
+  freightMass: {
+    label: 'Shipment Weight', short: 'Weight', kind: 'number', unitOf: 'massUnit', placeholder: '0',
+    dict: 'Gross mass of goods moved. Combined with distance it yields tonne-kilometres.'
+  },
+  massUnit: {
+    label: 'Weight Unit', short: 'Weight Unit', kind: 'select', dim: 'mass',
+    options: ['kg', 'tonne', 'lb'],
+    dict: 'Unit of a mass value. Must be a mass dimension.'
+  },
+
+  /* --- commuting & accommodation ---------------------------------------- */
+  employeeCount: {
+    label: 'Employee Count', short: 'Employees', kind: 'number', placeholder: '0',
+    dict: 'Headcount in scope for the activity. Supports average-data rules only.'
+  },
+  workingDays: {
+    label: 'Working Days', short: 'Working Days', kind: 'number', placeholder: '0',
+    dict: 'Commuting days in the period. Optional refinement on distance-based commuting.'
+  },
+  nights: {
+    label: 'Room Nights', short: 'Nights', kind: 'number', placeholder: '0',
+    dict: 'Occupied room nights. Primary input for accommodation average-data rules.'
+  },
+
+  /* --- waste & water ---------------------------------------------------- */
+  wasteQuantity: {
+    label: 'Waste Quantity', short: 'Waste Quantity', kind: 'number', unitOf: 'wasteUnit', placeholder: '0',
+    dict: 'Mass or volume of waste transferred off site.'
+  },
+  wasteUnit: {
+    label: 'Waste Unit', short: 'Waste Unit', kind: 'select', dim: 'mass',
+    options: ['kg', 'tonne', 'm³'],
+    dict: 'Unit of the waste quantity.'
+  },
+  wasteType: {
+    label: 'Waste Type', short: 'Waste Type', kind: 'select',
+    options: ['Mixed municipal waste', 'Paper & cardboard', 'Plastics (mixed)', 'Food & organic',
+              'Metals', 'Glass', 'WEEE / e-waste', 'Hazardous chemical',
+              'Construction & demolition', 'Wastewater sludge'],
+    dict: 'Waste stream composition. Required for the waste-type-specific methodology.'
+  },
+  treatmentMethod: {
+    label: 'Treatment Method', short: 'Treatment', kind: 'select',
+    options: ['Landfill', 'Recycling (closed-loop)', 'Recycling (open-loop)', 'Composting',
+              'Anaerobic digestion', 'Incineration — with energy recovery',
+              'Incineration — no energy recovery', 'Wastewater treatment'],
+    dict: 'Disposal or recovery route applied to the waste stream.'
+  },
+  waterVolume: {
+    label: 'Water Volume', short: 'Water Volume', kind: 'number', unitOf: 'waterUnit', placeholder: '0',
+    dict: 'Volume of water supplied to or discharged from the boundary.'
+  },
+  waterUnit: {
+    label: 'Water Unit', short: 'Water Unit', kind: 'select', dim: 'volume',
+    options: ['m³', 'kL', 'litre'],
+    dict: 'Unit of the water volume.'
+  },
+  waterService: {
+    label: 'Water Service', short: 'Water Service', kind: 'select',
+    options: ['Supply only', 'Treatment only', 'Supply + Treatment'],
+    dict: 'Which municipal service the volume relates to. Supply and treatment carry different datasets.'
+  },
+
+  /* --- refrigerants & process ------------------------------------------- */
+  refrigerantType: {
+    label: 'Refrigerant Type', short: 'Refrigerant', kind: 'select',
+    options: ['R-410A', 'R-134a', 'R-32', 'R-404A', 'R-407C', 'R-22 (HCFC)',
+              'R-744 (CO₂)', 'R-717 (Ammonia)'],
+    dict: 'Refrigerant gas in the equipment. Required by every fugitive-emission rule.'
+  },
+  refrigerantRecharge: {
+    label: 'Quantity Recharged (kg)', short: 'Recharge Qty', kind: 'number', placeholder: '0',
+    dict: 'Refrigerant added during servicing in the period. The observed term in a material balance.'
+  },
+  equipmentCharge: {
+    label: 'Equipment Charge Capacity (kg)', short: 'Charge Capacity', kind: 'number', placeholder: '0',
+    dict: 'Nameplate refrigerant charge of the installed equipment.'
+  },
+  leakRate: {
+    label: 'Assumed Leak Rate (%)', short: 'Leak Rate', kind: 'number', placeholder: '0',
+    dict: 'Governed annual leakage assumption for the equipment class, 0-100%.'
+  },
+  equipmentUnits: {
+    label: 'Units of Equipment', short: 'Equipment Units', kind: 'number', placeholder: '0',
+    dict: 'Count of installed units. Supports the simplified screening rule only.'
+  },
+  equipmentType: {
+    label: 'Equipment Type', short: 'Equipment Type', kind: 'select',
+    options: ['Split AC', 'Chiller — centrifugal', 'VRF system', 'Cold storage',
+              'Vehicle air-conditioning', 'Process refrigeration'],
+    dict: 'Equipment class, used to select a governed default leak rate.'
+  },
+  processOutput: {
+    label: 'Process Output (tonne)', short: 'Process Output', kind: 'number', placeholder: '0',
+    dict: 'Mass of product leaving the industrial process in the period.'
+  },
+  processInput: {
+    label: 'Raw Material Input (tonne)', short: 'Material Input', kind: 'number', placeholder: '0',
+    dict: 'Mass of carbonate or feedstock entering the process.'
+  },
+  processType: {
+    label: 'Process Type', short: 'Process Type', kind: 'select',
+    options: ['Cement — clinker production', 'Lime production', 'Ammonia production',
+              'Iron & steel — BF/BOF', 'Aluminium smelting (PFC)', 'Glass production',
+              'Nitric acid production'],
+    dict: 'Industrial process generating non-combustion emissions.'
+  },
+
+  /* --- value chain ------------------------------------------------------ */
+  supplierData: {
+    label: 'Supplier Data', short: 'Supplier Data', kind: 'select',
+    options: ['Verified supplier product footprint (PCF)', 'Unverified supplier product footprint',
+              'Supplier Scope 1+2 with allocation'],
+    dict: 'Primary data received from the supplier. Outranks every generic dataset when present.'
+  },
+  materialMass: {
+    label: 'Quantity Purchased', short: 'Quantity', kind: 'number', unitOf: 'massUnit', placeholder: '0',
+    dict: 'Physical quantity of goods purchased, in mass units.'
+  },
+  materialType: {
+    label: 'Material / Product Type', short: 'Material', kind: 'select',
+    options: ['Steel — primary', 'Steel — recycled', 'Aluminium', 'Cement', 'Plastic — PET',
+              'Plastic — HDPE', 'Paper & pulp', 'Cotton textile', 'Glass', 'Copper',
+              'Electronics assembly', 'Chemicals — generic'],
+    dict: 'Material classification used to resolve a mass-based average dataset.'
+  },
+  floorArea: {
+    label: 'Floor Area', short: 'Floor Area', kind: 'number', unitOf: 'floorAreaUnit', placeholder: '0',
+    dict: 'Gross internal area of the asset. Supports floor-area average-data rules.'
+  },
+  floorAreaUnit: {
+    label: 'Area Unit', short: 'Area Unit', kind: 'select', dim: 'area',
+    options: ['m²', 'sq.ft'],
+    dict: 'Unit of the floor area.'
+  },
+  assetType: {
+    label: 'Asset Type', short: 'Asset Type', kind: 'select',
+    options: ['Office', 'Warehouse', 'Retail', 'Data centre', 'Manufacturing plant', 'Vehicle fleet'],
+    dict: 'Class of leased or operated asset.'
+  },
+  franchiseType: {
+    label: 'Franchise Type', short: 'Franchise Type', kind: 'select',
+    options: ['Retail outlet', 'Restaurant / QSR', 'Hotel', 'Service centre'],
+    dict: 'Class of franchised operation.'
+  },
+  unitsSold: {
+    label: 'Units Sold', short: 'Units Sold', kind: 'number', placeholder: '0',
+    dict: 'Count of products sold in the reporting period.'
+  },
+  energyPerUse: {
+    label: 'Energy per Use (kWh)', short: 'Energy / Use', kind: 'number', placeholder: '0',
+    dict: 'Measured energy drawn by the product in one use cycle.'
+  },
+  usesPerLifetime: {
+    label: 'Uses per Lifetime', short: 'Lifetime Uses', kind: 'number', placeholder: '0',
+    dict: 'Governed assumption for total use cycles over the product lifetime.'
+  },
+  productType: {
+    label: 'Product Type', short: 'Product Type', kind: 'select',
+    options: ['Domestic appliance', 'Industrial equipment', 'Consumer electronics',
+              'Vehicle', 'Packaging', 'Building material'],
+    dict: 'Product class, used to resolve average use-phase or end-of-life datasets.'
+  },
+  processingEnergy: {
+    label: 'Downstream Processing Energy (kWh)', short: 'Processing Energy', kind: 'number', placeholder: '0',
+    dict: 'Energy consumed by the customer to process the intermediate product sold.'
+  },
+  steamSource: {
+    label: 'Supplier Emission Rate', short: 'Supplier Rate', kind: 'select',
+    options: ['Supplier-published emission rate', 'Metered supplier data', 'Default grid / heat factor'],
+    dict: 'Basis on which the steam, heat or cooling supplier reports its emission intensity.'
+  },
+  investmentValue: {
+    label: 'Investment Value', short: 'Investment Value', kind: 'number', unitOf: 'currency', placeholder: '0',
+    dict: 'Carrying value of the equity or debt investment.'
+  },
+  ownershipShare: {
+    label: 'Ownership Share (%)', short: 'Ownership Share', kind: 'number', placeholder: '0',
+    dict: 'Reporting company share of the investee, 0-100%.'
+  },
+  investeeEmissions: {
+    label: 'Investee Emissions (tCO₂e)', short: 'Investee Emissions', kind: 'number', placeholder: '0',
+    dict: 'Reported Scope 1+2 of the investee. The only primary-data input for Category 15.'
+  },
+  investeeRevenue: {
+    label: 'Investee Revenue', short: 'Investee Revenue', kind: 'number', unitOf: 'currency', placeholder: '0',
+    dict: 'Investee turnover, used to allocate sector-average intensity.'
+  }
+};
+
+/* ---------------------------------------------------- 2. METHODOLOGIES --- */
+/* tier drives confidence. There is no fourth option and no "best guess".   */
+
+const METHODOLOGIES = {
+  DIST_BASED:     { name: 'Distance-based',              tier: 'Primary',   confidence: 'High',
+                    blurb: 'Applies a mode-specific factor to measured distance.' },
+  FUEL_BASED:     { name: 'Fuel-based',                  tier: 'Primary',   confidence: 'High',
+                    blurb: 'Applies a fuel-specific factor to metered fuel quantity.' },
+  ENERGY_CONTENT: { name: 'Energy-content-based',        tier: 'Primary',   confidence: 'High',
+                    blurb: 'Converts fuel to energy content before applying a factor.' },
+  SPEND_BASED:    { name: 'Spend-based',                 tier: 'Proxy',     confidence: 'Low',
+                    blurb: 'Applies a monetary intensity to procurement value. Screening quality only.' },
+  EEIO:           { name: 'Spend-based (EEIO)',          tier: 'Proxy',     confidence: 'Low',
+                    blurb: 'Applies an input-output sector intensity to spend.' },
+  LOC_BASED:      { name: 'Location-based',              tier: 'Primary',   confidence: 'High',
+                    blurb: 'Applies the average grid intensity of the balancing area.' },
+  MKT_BASED:      { name: 'Market-based',                tier: 'Primary',   confidence: 'High',
+                    blurb: 'Applies the intensity of the contractual instrument claimed.' },
+  WT_DIST:        { name: 'Weight-distance',             tier: 'Primary',   confidence: 'High',
+                    blurb: 'Applies a tonne-kilometre factor to mass moved over distance.' },
+  VEH_DIST:       { name: 'Vehicle-distance',            tier: 'Primary',   confidence: 'High',
+                    blurb: 'Applies a vehicle-kilometre factor where load is unknown.' },
+  SUPPLIER_SPEC:  { name: 'Supplier-specific',           tier: 'Primary',   confidence: 'High',
+                    blurb: 'Uses primary data reported by the supplier for the purchased item.' },
+  AVG_MASS:       { name: 'Average-data (mass)',         tier: 'Secondary', confidence: 'Medium',
+                    blurb: 'Applies a material cradle-to-gate factor to physical quantity.' },
+  AVG_DATA:       { name: 'Average-data',                tier: 'Secondary', confidence: 'Medium',
+                    blurb: 'Applies a governed average intensity to a physical activity driver.' },
+  WASTE_TYPE:     { name: 'Waste-type-specific',         tier: 'Primary',   confidence: 'High',
+                    blurb: 'Applies a factor resolved from both waste stream and treatment route.' },
+  WASTE_TREAT:    { name: 'Treatment-specific',          tier: 'Secondary', confidence: 'Medium',
+                    blurb: 'Applies an average-composition factor for the treatment route.' },
+  MAT_BALANCE:    { name: 'Material-balance',            tier: 'Primary',   confidence: 'High',
+                    blurb: 'Derives fugitive loss from refrigerant actually recharged.' },
+  SCREEN_LEAK:    { name: 'Screening (leak-rate)',       tier: 'Secondary', confidence: 'Medium',
+                    blurb: 'Applies a governed leak rate to installed charge.' },
+  SCREEN_SIMPLE:  { name: 'Simplified screening',        tier: 'Proxy',     confidence: 'Low',
+                    blurb: 'Applies a default charge and leak rate per equipment unit.' },
+  PROC_MASS:      { name: 'Process mass-balance',        tier: 'Primary',   confidence: 'High',
+                    blurb: 'Derives process emissions from output mass and process chemistry.' },
+  PROC_STOICH:    { name: 'Stoichiometric (input-based)', tier: 'Primary',  confidence: 'High',
+                    blurb: 'Derives process emissions from carbonate or feedstock input.' },
+  WTT_FUEL:       { name: 'Upstream fuel (well-to-tank)', tier: 'Primary',  confidence: 'High',
+                    blurb: 'Applies an upstream extraction and refining factor to fuel purchased.' },
+  TD_LOSS:        { name: 'T&D loss-based',              tier: 'Primary',   confidence: 'High',
+                    blurb: 'Applies grid transmission and distribution loss rates to energy imported.' },
+  NIGHT_BASED:    { name: 'Night-based (average data)',  tier: 'Secondary', confidence: 'Medium',
+                    blurb: 'Applies a country average per occupied room night.' },
+  FLOOR_AREA:     { name: 'Floor-area based',            tier: 'Secondary', confidence: 'Medium',
+                    blurb: 'Applies an asset-class intensity per unit floor area.' },
+  ASSET_SPEC:     { name: 'Asset-specific',              tier: 'Primary',   confidence: 'High',
+                    blurb: 'Uses metered energy for the specific asset.' },
+  VOL_WATER:      { name: 'Volume-based',                tier: 'Primary',   confidence: 'High',
+                    blurb: 'Applies supply or treatment factors to metered water volume.' },
+  USE_DIRECT:     { name: 'Direct use-phase',            tier: 'Primary',   confidence: 'High',
+                    blurb: 'Models lifetime energy of sold products against a grid intensity.' },
+  USE_FUEL:       { name: 'Use-phase fuel-based',        tier: 'Primary',   confidence: 'High',
+                    blurb: 'Models lifetime fuel combustion of sold products.' },
+  SITE_PROC:      { name: 'Site-specific processing',    tier: 'Primary',   confidence: 'High',
+                    blurb: 'Uses customer-reported energy to process the intermediate product.' },
+  INVEST_SPEC:    { name: 'Investment-specific',         tier: 'Primary',   confidence: 'High',
+                    blurb: 'Allocates reported investee emissions by ownership share.' },
+  ECON_ALLOC:     { name: 'Economic allocation',         tier: 'Secondary', confidence: 'Medium',
+                    blurb: 'Allocates sector-average intensity by revenue share.' },
+  INSUFFICIENT:   { name: 'Insufficient Data',           tier: '—',         confidence: 'None',
+                    blurb: 'No governed rule was satisfied. The engine stops rather than assume.' }
+};
+
+/* ------------------------------------------------------- 3. CATEGORIES --- */
+/* Rules are evaluated strictly in priority order. First satisfied rule wins.
+   `requires` is an AND list of field ids. `optional` refines but never gates. */
+
+const CATEGORIES = [
+  /* ============================ SCOPE 1 ================================= */
+  {
+    id: 'stationaryCombustion', label: 'Stationary Combustion',
+    scope: 'Scope 1', ghgCat: 'Direct — stationary', table: 'SC-RULES', tableVersion: 'v1.0',
+    templates: ['Boiler / Furnace', 'Diesel Generator', 'Process Heater', 'Cooking / Kitchen'],
+    fields: ['fuelQuantity', 'fuelType', 'energyConsumption', 'spend'],
+    rules: [
+      { requires: ['fuelQuantity', 'fuelType'], methodology: 'FUEL_BASED',
+        note: 'Metered fuel purchase is the preferred basis for all stationary sources.' },
+      { requires: ['energyConsumption', 'fuelType'], methodology: 'ENERGY_CONTENT',
+        note: 'Used where the site meters delivered energy rather than fuel volume.' },
+      { requires: ['spend', 'currency', 'fuelType'], methodology: 'SPEND_BASED',
+        note: 'Screening only. Fuel price volatility makes this unsuitable for disclosure.' }
+    ]
+  },
+  {
+    id: 'mobileCombustion', label: 'Mobile Combustion — Owned Fleet',
+    scope: 'Scope 1', ghgCat: 'Direct — mobile', table: 'MC-RULES', tableVersion: 'v1.1',
+    templates: ['Company Car', 'Light Commercial Vehicle', 'Heavy Goods Vehicle', 'Owned Aircraft', 'Marine Vessel'],
+    fields: ['fuelQuantity', 'fuelType', 'distance', 'mode', 'spend'],
+    fieldOptions: {
+      mode: ['Road — Car (Petrol)', 'Road — Car (Diesel)', 'Road — Car (Battery Electric)',
+             'Road — LGV (<3.5t)', 'Road — HGV (>7.5t)', 'Road — Two-wheeler',
+             'Air — Owned Aircraft', 'Sea — Owned Vessel']
+    },
+    rules: [
+      { requires: ['fuelQuantity', 'fuelType'], methodology: 'FUEL_BASED',
+        note: 'Fuel card and bunker records outrank odometer data for owned assets.' },
+      { requires: ['distance', 'mode', 'fuelType'], methodology: 'DIST_BASED',
+        note: 'Odometer distance with a known powertrain.' },
+      { requires: ['distance', 'mode'], methodology: 'VEH_DIST',
+        note: 'Average-vehicle factor where the fuel type is unrecorded.' },
+      { requires: ['spend', 'currency'], methodology: 'SPEND_BASED',
+        note: 'Fuel spend fallback. Flag for data-quality improvement.' }
+    ]
+  },
+  {
+    id: 'fugitiveRefrigerants', label: 'Fugitive Emissions — Refrigerants',
+    scope: 'Scope 1', ghgCat: 'Direct — fugitive', table: 'FG-RULES', tableVersion: 'v1.0',
+    templates: ['Building HVAC', 'Cold Chain', 'Vehicle Air-conditioning', 'Process Refrigeration'],
+    fields: ['refrigerantType', 'refrigerantRecharge', 'equipmentCharge', 'leakRate', 'equipmentUnits', 'equipmentType'],
+    rules: [
+      { requires: ['refrigerantType', 'refrigerantRecharge'], methodology: 'MAT_BALANCE',
+        note: 'Service records showing gas actually added are the highest-quality basis.' },
+      { requires: ['refrigerantType', 'equipmentCharge', 'leakRate'], methodology: 'SCREEN_LEAK',
+        note: 'Installed charge with a governed leak-rate assumption.' },
+      { requires: ['refrigerantType', 'equipmentUnits', 'equipmentType'], methodology: 'SCREEN_SIMPLE',
+        note: 'Unit count only. Both charge and leak rate come from governed defaults.' }
+    ]
+  },
+  {
+    id: 'processEmissions', label: 'Industrial Process Emissions',
+    scope: 'Scope 1', ghgCat: 'Direct — process', table: 'PR-RULES', tableVersion: 'v1.0',
+    templates: ['Cement Kiln', 'Lime Kiln', 'Ammonia Plant', 'Steel — BF/BOF', 'Aluminium Smelter'],
+    fields: ['processType', 'processOutput', 'processInput', 'spend'],
+    rules: [
+      { requires: ['processType', 'processInput'], methodology: 'PROC_STOICH',
+        note: 'Carbonate input is measured directly and converts stoichiometrically.' },
+      { requires: ['processType', 'processOutput'], methodology: 'PROC_MASS',
+        note: 'Output mass with a governed clinker or product factor.' }
+    ]
+  },
+
+  /* ============================ SCOPE 2 ================================= */
+  {
+    id: 'purchasedElectricity', label: 'Purchased Electricity',
+    scope: 'Scope 2', ghgCat: 'Indirect — energy', table: 'PE-RULES', tableVersion: 'v1.0',
+    templates: ['Grid Import — Office', 'Grid Import — Plant', 'EV Charging', 'Data Centre Draw'],
+    fields: ['energyConsumption', 'gridRegion', 'contractualInstrument', 'spend'],
+    rules: [
+      { requires: ['energyConsumption', 'gridRegion'], methodology: 'LOC_BASED',
+        note: 'Dual reporting requires a location-based figure whenever grid region is known.' },
+      { requires: ['energyConsumption', 'contractualInstrument'], methodology: 'MKT_BASED',
+        note: 'Applied when an attribute certificate or contract is evidenced.' },
+      { requires: ['spend', 'currency', 'country'], methodology: 'SPEND_BASED',
+        note: 'Tariff-derived estimate. Permitted only for unmetered minor sites.' }
+    ]
+  },
+  {
+    id: 'purchasedSteam', label: 'Purchased Steam, Heat & Cooling',
+    scope: 'Scope 2', ghgCat: 'Indirect — energy', table: 'PS-RULES', tableVersion: 'v1.0',
+    templates: ['District Heating', 'District Cooling', 'Purchased Steam', 'Chilled Water'],
+    fields: ['energyConsumption', 'steamSource', 'gridRegion', 'spend'],
+    rules: [
+      { requires: ['energyConsumption', 'steamSource'], methodology: 'SUPPLIER_SPEC',
+        note: 'Supplier-published intensity is preferred wherever the utility discloses one.' },
+      { requires: ['energyConsumption', 'gridRegion'], methodology: 'LOC_BASED',
+        note: 'Regional default heat or cooling factor.' },
+      { requires: ['spend', 'currency', 'country'], methodology: 'SPEND_BASED',
+        note: 'Screening estimate from utility invoices.' }
+    ]
+  },
+
+  /* ============================ SCOPE 3 ================================= */
+  {
+    id: 'purchasedGoods', label: 'Purchased Goods & Services',
+    scope: 'Scope 3', ghgCat: 'Category 1', table: 'PG-RULES', tableVersion: 'v1.2',
+    templates: ['Raw Materials', 'Components', 'Packaging', 'Professional Services', 'IT Services'],
+    fields: ['supplierData', 'materialMass', 'materialType', 'spend', 'sectorCode'],
+    rules: [
+      { requires: ['supplierData', 'materialMass'], methodology: 'SUPPLIER_SPEC',
+        note: 'A supplier product footprint outranks every generic dataset.' },
+      { requires: ['materialMass', 'materialType'], methodology: 'AVG_MASS',
+        note: 'Cradle-to-gate material factor applied to purchased quantity.' },
+      { requires: ['spend', 'currency', 'sectorCode'], methodology: 'EEIO',
+        note: 'Input-output screening. Expect wide uncertainty bands.' },
+      { requires: ['spend', 'currency'], methodology: 'SPEND_BASED',
+        note: 'Un-sectored spend. Lowest-quality permitted outcome in this table.' }
+    ]
+  },
+  {
+    id: 'capitalGoods', label: 'Capital Goods',
+    scope: 'Scope 3', ghgCat: 'Category 2', table: 'CG-RULES', tableVersion: 'v1.0',
+    templates: ['Plant & Machinery', 'Buildings', 'Vehicles', 'IT Hardware'],
+    fields: ['supplierData', 'materialMass', 'materialType', 'spend', 'sectorCode'],
+    rules: [
+      { requires: ['supplierData', 'materialMass'], methodology: 'SUPPLIER_SPEC',
+        note: 'Manufacturer-issued footprint for the asset acquired.' },
+      { requires: ['materialMass', 'materialType'], methodology: 'AVG_MASS',
+        note: 'Mass-based factor for the dominant construction material.' },
+      { requires: ['spend', 'currency', 'sectorCode'], methodology: 'EEIO',
+        note: 'Capitalised value screened against a sector intensity. Not amortised.' }
+    ]
+  },
+  {
+    id: 'fera', label: 'Fuel & Energy-Related Activities',
+    scope: 'Scope 3', ghgCat: 'Category 3', table: 'FE-RULES', tableVersion: 'v1.0',
+    templates: ['Upstream Fuel (WTT)', 'T&D Losses', 'Generation of Purchased Electricity'],
+    fields: ['fuelQuantity', 'fuelType', 'energyConsumption', 'gridRegion', 'spend'],
+    rules: [
+      { requires: ['fuelQuantity', 'fuelType'], methodology: 'WTT_FUEL',
+        note: 'Upstream burden of fuels already reported in Scope 1.' },
+      { requires: ['energyConsumption', 'gridRegion'], methodology: 'TD_LOSS',
+        note: 'Grid losses on electricity already reported in Scope 2.' },
+      { requires: ['spend', 'currency'], methodology: 'SPEND_BASED',
+        note: 'Screening only; upstream intensity varies sharply by fuel.' }
+    ]
+  },
+  {
+    id: 'upstreamTransport', label: 'Upstream Transportation & Distribution',
+    scope: 'Scope 3', ghgCat: 'Category 4', table: 'UT-RULES', tableVersion: 'v1.1',
+    templates: ['Inbound Freight', 'Third-party Warehousing', 'Courier & Parcel', 'Ocean Freight'],
+    fields: ['freightMass', 'distance', 'mode', 'fuelQuantity', 'fuelType', 'spend'],
+    fieldOptions: {
+      mode: ['Road — LGV (<3.5t)', 'Road — HGV (>7.5t)', 'Rail — Freight',
+             'Sea — Container Ship', 'Air — Freight', 'Inland Waterway'],
+      distanceUnit: ['km', 'tonne.km', 'vehicle.km', 'miles']
+    },
+    rules: [
+      { requires: ['freightMass', 'distance', 'mode'], methodology: 'WT_DIST',
+        note: 'Tonne-kilometre is the reference method for all freight movements.' },
+      { requires: ['fuelQuantity', 'fuelType'], methodology: 'FUEL_BASED',
+        note: 'Applies where the carrier discloses fuel consumed on your consignments.' },
+      { requires: ['distance', 'mode'], methodology: 'VEH_DIST',
+        note: 'Vehicle-kilometre factor where consignment weight is unrecorded.' },
+      { requires: ['spend', 'currency'], methodology: 'SPEND_BASED',
+        note: 'Freight invoice value. Screening only.' }
+    ]
+  },
+  {
+    id: 'wasteOperations', label: 'Waste Generated in Operations',
+    scope: 'Scope 3', ghgCat: 'Category 5', table: 'WS-RULES', tableVersion: 'v1.0',
+    templates: ['General Waste', 'Recycling Stream', 'Hazardous Waste', 'Wastewater'],
+    fields: ['wasteQuantity', 'wasteType', 'treatmentMethod', 'employeeCount', 'spend'],
+    rules: [
+      { requires: ['wasteQuantity', 'wasteType', 'treatmentMethod'], methodology: 'WASTE_TYPE',
+        note: 'Weighbridge tickets naming both stream and route.' },
+      { requires: ['wasteQuantity', 'treatmentMethod'], methodology: 'WASTE_TREAT',
+        note: 'Average-composition factor for the disposal route.' },
+      { requires: ['employeeCount', 'country'], methodology: 'AVG_DATA',
+        note: 'Per-employee waste generation default. Use only where no tickets exist.' },
+      { requires: ['spend', 'currency'], methodology: 'SPEND_BASED',
+        note: 'Waste contractor invoice value.' }
+    ]
+  },
+  {
+    id: 'businessTravel', label: 'Business Travel',
+    scope: 'Scope 3', ghgCat: 'Category 6', table: 'BT-RULES', tableVersion: 'v1.0',
+    templates: ['Air Travel', 'Rail Travel', 'Road Travel', 'Company Vehicle', 'Taxi & Ride-hail'],
+    fields: ['distance', 'mode', 'fuelQuantity', 'fuelType', 'spend'],
+    rules: [
+      { requires: ['distance', 'mode'], methodology: 'DIST_BASED',
+        note: 'Itinerary distance from the travel management company is the reference method.' },
+      { requires: ['fuelQuantity', 'fuelType'], methodology: 'FUEL_BASED',
+        note: 'Applies to grey-fleet and company vehicles reimbursed on fuel.' },
+      { requires: ['spend', 'currency'], methodology: 'SPEND_BASED',
+        note: 'Expense-system fallback where no itinerary is captured.' }
+    ]
+  },
+  {
+    id: 'hotelStay', label: 'Hotel Stays & Accommodation',
+    scope: 'Scope 3', ghgCat: 'Category 6', table: 'HS-RULES', tableVersion: 'v1.0',
+    templates: ['Hotel Night', 'Serviced Apartment', 'Conference Venue'],
+    fields: ['nights', 'spend'],
+    rules: [
+      { requires: ['nights', 'country'], methodology: 'NIGHT_BASED',
+        note: 'Country average per occupied room night, the standard accommodation method.' },
+      { requires: ['spend', 'currency'], methodology: 'SPEND_BASED',
+        note: 'Room spend where night counts are not captured.' }
+    ]
+  },
+  {
+    id: 'employeeCommuting', label: 'Employee Commuting',
+    scope: 'Scope 3', ghgCat: 'Category 7', table: 'EC-RULES', tableVersion: 'v1.0',
+    templates: ['Commute Survey', 'Shuttle Service', 'Remote Working'],
+    fields: ['distance', 'mode', 'workingDays', 'fuelQuantity', 'fuelType', 'employeeCount'],
+    rules: [
+      { requires: ['distance', 'mode'], optional: ['workingDays'], methodology: 'DIST_BASED',
+        note: 'Survey distance by mode. Working days scale the annual total.' },
+      { requires: ['fuelQuantity', 'fuelType'], methodology: 'FUEL_BASED',
+        note: 'Applies to company-operated shuttles with fuel records.' },
+      { requires: ['employeeCount', 'country'], methodology: 'AVG_DATA',
+        note: 'National commuting average per employee where no survey was run.' }
+    ]
+  },
+  {
+    id: 'upstreamLeased', label: 'Upstream Leased Assets',
+    scope: 'Scope 3', ghgCat: 'Category 8', table: 'UL-RULES', tableVersion: 'v1.0',
+    templates: ['Leased Office', 'Leased Warehouse', 'Leased Vehicle'],
+    fields: ['energyConsumption', 'gridRegion', 'floorArea', 'assetType', 'spend'],
+    rules: [
+      { requires: ['energyConsumption', 'gridRegion'], methodology: 'ASSET_SPEC',
+        note: 'Sub-metered consumption for the leased space.' },
+      { requires: ['floorArea', 'assetType'], methodology: 'FLOOR_AREA',
+        note: 'Asset-class intensity per square metre where no sub-meter exists.' },
+      { requires: ['spend', 'currency'], methodology: 'SPEND_BASED',
+        note: 'Lease payments as a last-resort driver.' }
+    ]
+  },
+  {
+    id: 'downstreamTransport', label: 'Downstream Transportation & Distribution',
+    scope: 'Scope 3', ghgCat: 'Category 9', table: 'DT-RULES', tableVersion: 'v1.0',
+    templates: ['Outbound Freight', 'Retail Distribution', 'Last-mile Delivery'],
+    fields: ['freightMass', 'distance', 'mode', 'fuelQuantity', 'fuelType', 'spend'],
+    fieldOptions: {
+      mode: ['Road — LGV (<3.5t)', 'Road — HGV (>7.5t)', 'Rail — Freight',
+             'Sea — Container Ship', 'Air — Freight', 'Inland Waterway'],
+      distanceUnit: ['km', 'tonne.km', 'vehicle.km', 'miles']
+    },
+    rules: [
+      { requires: ['freightMass', 'distance', 'mode'], methodology: 'WT_DIST',
+        note: 'Tonne-kilometre from despatch records.' },
+      { requires: ['fuelQuantity', 'fuelType'], methodology: 'FUEL_BASED',
+        note: 'Carrier-disclosed fuel for your consignments.' },
+      { requires: ['distance', 'mode'], methodology: 'VEH_DIST',
+        note: 'Vehicle-kilometre where despatch weight is unrecorded.' },
+      { requires: ['spend', 'currency'], methodology: 'SPEND_BASED',
+        note: 'Outbound logistics spend. Screening only.' }
+    ]
+  },
+  {
+    id: 'processingSold', label: 'Processing of Sold Products',
+    scope: 'Scope 3', ghgCat: 'Category 10', table: 'PS10-RULES', tableVersion: 'v1.0',
+    templates: ['Intermediate Product', 'Bulk Chemical', 'Semi-finished Component'],
+    fields: ['processingEnergy', 'gridRegion', 'materialMass', 'materialType'],
+    rules: [
+      { requires: ['processingEnergy', 'gridRegion'], methodology: 'SITE_PROC',
+        note: 'Customer-reported processing energy. Requires a data-sharing agreement.' },
+      { requires: ['materialMass', 'materialType'], methodology: 'AVG_DATA',
+        note: 'Sector-average processing intensity per tonne sold.' }
+    ]
+  },
+  {
+    id: 'useOfSold', label: 'Use of Sold Products',
+    scope: 'Scope 3', ghgCat: 'Category 11', table: 'US-RULES', tableVersion: 'v1.0',
+    templates: ['Energy-using Product', 'Fuel-using Product', 'Feedstock / Intermediate'],
+    fields: ['unitsSold', 'energyPerUse', 'usesPerLifetime', 'gridRegion', 'fuelQuantity', 'fuelType', 'productType'],
+    rules: [
+      { requires: ['unitsSold', 'energyPerUse', 'usesPerLifetime', 'gridRegion'], methodology: 'USE_DIRECT',
+        note: 'Measured product energy against the grid of the sales market.' },
+      { requires: ['unitsSold', 'fuelQuantity', 'fuelType'], methodology: 'USE_FUEL',
+        note: 'Lifetime fuel combustion for fuel-burning products.' },
+      { requires: ['unitsSold', 'productType'], methodology: 'AVG_DATA',
+        note: 'Product-class lifetime average. Wide uncertainty; disclose the assumption.' }
+    ]
+  },
+  {
+    id: 'endOfLife', label: 'End-of-Life Treatment of Sold Products',
+    scope: 'Scope 3', ghgCat: 'Category 12', table: 'EL-RULES', tableVersion: 'v1.0',
+    templates: ['Packaging Disposal', 'Product Disposal', 'WEEE Take-back'],
+    fields: ['materialMass', 'materialType', 'treatmentMethod', 'unitsSold', 'productType'],
+    rules: [
+      { requires: ['materialMass', 'materialType', 'treatmentMethod'], methodology: 'WASTE_TYPE',
+        note: 'Mass by material with the expected regional disposal route.' },
+      { requires: ['materialMass', 'treatmentMethod'], methodology: 'WASTE_TREAT',
+        note: 'Average-composition factor for the disposal route.' },
+      { requires: ['unitsSold', 'productType'], methodology: 'AVG_DATA',
+        note: 'Per-unit disposal average where bill-of-materials mass is unavailable.' }
+    ]
+  },
+  {
+    id: 'downstreamLeased', label: 'Downstream Leased Assets',
+    scope: 'Scope 3', ghgCat: 'Category 13', table: 'DL-RULES', tableVersion: 'v1.0',
+    templates: ['Leased-out Office', 'Leased-out Equipment', 'Leased-out Vehicle'],
+    fields: ['energyConsumption', 'gridRegion', 'floorArea', 'assetType', 'spend'],
+    rules: [
+      { requires: ['energyConsumption', 'gridRegion'], methodology: 'ASSET_SPEC',
+        note: 'Metered consumption reported by the lessee.' },
+      { requires: ['floorArea', 'assetType'], methodology: 'FLOOR_AREA',
+        note: 'Asset-class intensity per unit area let.' },
+      { requires: ['spend', 'currency'], methodology: 'SPEND_BASED',
+        note: 'Lease income as an allocation driver. Screening only.' }
+    ]
+  },
+  {
+    id: 'franchises', label: 'Franchises',
+    scope: 'Scope 3', ghgCat: 'Category 14', table: 'FR-RULES', tableVersion: 'v1.0',
+    templates: ['Franchised Outlet', 'Franchised Restaurant', 'Franchised Hotel'],
+    fields: ['energyConsumption', 'gridRegion', 'floorArea', 'franchiseType', 'spend'],
+    rules: [
+      { requires: ['energyConsumption', 'gridRegion'], methodology: 'ASSET_SPEC',
+        note: 'Franchisee-reported metered energy.' },
+      { requires: ['floorArea', 'franchiseType'], methodology: 'FLOOR_AREA',
+        note: 'Outlet-class intensity per unit area.' },
+      { requires: ['spend', 'currency'], methodology: 'SPEND_BASED',
+        note: 'Franchise revenue as a proxy driver.' }
+    ]
+  },
+  {
+    id: 'investments', label: 'Investments',
+    scope: 'Scope 3', ghgCat: 'Category 15', table: 'IN-RULES', tableVersion: 'v1.0',
+    templates: ['Equity Investment', 'Debt Investment', 'Project Finance'],
+    fields: ['investeeEmissions', 'ownershipShare', 'investmentValue', 'investeeRevenue', 'sectorCode'],
+    rules: [
+      { requires: ['investeeEmissions', 'ownershipShare'], methodology: 'INVEST_SPEC',
+        note: 'Reported investee inventory allocated by equity share. PCAF score 1-2.' },
+      { requires: ['investmentValue', 'investeeRevenue', 'sectorCode'], methodology: 'ECON_ALLOC',
+        note: 'Revenue-based allocation of sector intensity. PCAF score 4.' },
+      { requires: ['investmentValue', 'sectorCode'], methodology: 'EEIO',
+        note: 'Asset-value screening against sector intensity. PCAF score 5.' }
+    ]
+  },
+  {
+    id: 'waterWastewater', label: 'Water Supply & Wastewater',
+    scope: 'Scope 3', ghgCat: 'Category 1', table: 'WT-RULES', tableVersion: 'v1.0',
+    templates: ['Municipal Supply', 'Wastewater Discharge', 'Treated Effluent'],
+    fields: ['waterVolume', 'waterService', 'spend'],
+    rules: [
+      { requires: ['waterVolume', 'waterService'], methodology: 'VOL_WATER',
+        note: 'Metered volume with the service split declared.' },
+      { requires: ['spend', 'currency', 'country'], methodology: 'SPEND_BASED',
+        note: 'Utility invoice value where no meter reading exists.' }
+    ]
+  }
+];
+
+/* -------------------------------------------------------- 4. SCENARIOS --- */
+/* The first six mirror the demonstration script. The remainder exercise the
+   rest of the library, including one record that fails validation outright. */
+
+const SCENARIOS = [
+  {
+    name: 'Air travel, distance known',
+    desc: 'Itinerary from the travel desk with sector distance and haul band.',
+    expect: 'Distance-based',
+    values: {
+      activityCategory: 'businessTravel', activityType: 'Air Travel', reportingYear: '2026',
+      country: 'India', region: 'Tamil Nadu',
+      mode: 'Air — Short Haul (<1,600 km)', distance: '1200', distanceUnit: 'passenger.km'
+    }
+  },
+  {
+    name: 'Company vehicle, fuel purchased',
+    desc: 'No itinerary captured, but a fuel card record exists for the trip.',
+    expect: 'Fuel-based',
+    values: {
+      activityCategory: 'businessTravel', activityType: 'Company Vehicle', reportingYear: '2026',
+      country: 'India', region: 'Tamil Nadu',
+      fuelQuantity: '500', fuelUnit: 'litre', fuelType: 'Diesel'
+    }
+  },
+  {
+    name: 'Business travel, spend only',
+    desc: 'Expense claim reconciled from finance with no activity detail.',
+    expect: 'Spend-based',
+    values: {
+      activityCategory: 'businessTravel', activityType: 'Road Travel', reportingYear: '2026',
+      country: 'India', region: 'Tamil Nadu',
+      spend: '25000', currency: 'INR'
+    }
+  },
+  {
+    name: 'Electricity, grid region known',
+    desc: 'Metered import with no attribute certificate claimed.',
+    expect: 'Location-based',
+    values: {
+      activityCategory: 'purchasedElectricity', activityType: 'Grid Import — Plant', reportingYear: '2026',
+      country: 'India', region: 'Tamil Nadu',
+      energyConsumption: '5000', energyUnit: 'kWh', gridRegion: 'Southern Region (SR)'
+    }
+  },
+  {
+    name: 'Electricity, I-REC contract',
+    desc: 'Same volume, backed by certificates, with no grid region recorded.',
+    expect: 'Market-based',
+    values: {
+      activityCategory: 'purchasedElectricity', activityType: 'Grid Import — Office', reportingYear: '2026',
+      country: 'India', region: 'Karnataka',
+      energyConsumption: '5000', energyUnit: 'kWh', contractualInstrument: 'I-REC (India)'
+    }
+  },
+  {
+    name: 'Travel record with no measures',
+    desc: 'Context only. Every rule in the table fails its input test.',
+    expect: 'Insufficient Data', tone: 'clay',
+    values: {
+      activityCategory: 'businessTravel', activityType: 'Air Travel', reportingYear: '2026',
+      country: 'India', region: 'Tamil Nadu'
+    }
+  },
+  {
+    name: 'Inbound freight, weight and distance',
+    desc: 'Despatch note with consignment mass and lane distance.',
+    expect: 'Weight-distance',
+    values: {
+      activityCategory: 'upstreamTransport', activityType: 'Inbound Freight', reportingYear: '2026',
+      country: 'India', region: 'Maharashtra',
+      freightMass: '12', massUnit: 'tonne', distance: '640', distanceUnit: 'km',
+      mode: 'Road — HGV (>7.5t)'
+    }
+  },
+  {
+    name: 'Purchased goods, supplier footprint',
+    desc: 'Verified product carbon footprint received from the mill.',
+    expect: 'Supplier-specific',
+    values: {
+      activityCategory: 'purchasedGoods', activityType: 'Raw Materials', reportingYear: '2026',
+      country: 'India', region: 'Gujarat',
+      supplierData: 'Verified supplier product footprint (PCF)',
+      materialMass: '24', massUnit: 'tonne', materialType: 'Steel — primary',
+      spend: '1850000', currency: 'INR'
+    }
+  },
+  {
+    name: 'Waste, weighbridge ticket',
+    desc: 'Stream and disposal route both named on the contractor ticket.',
+    expect: 'Waste-type-specific',
+    values: {
+      activityCategory: 'wasteOperations', activityType: 'General Waste', reportingYear: '2026',
+      country: 'India', region: 'Tamil Nadu',
+      wasteQuantity: '18', wasteUnit: 'tonne', wasteType: 'Mixed municipal waste',
+      treatmentMethod: 'Landfill'
+    }
+  },
+  {
+    name: 'Refrigerant recharge log',
+    desc: 'Service record showing gas actually added to the chiller.',
+    expect: 'Material-balance',
+    values: {
+      activityCategory: 'fugitiveRefrigerants', activityType: 'Building HVAC', reportingYear: '2026',
+      country: 'India', region: 'Tamil Nadu',
+      refrigerantType: 'R-410A', refrigerantRecharge: '42',
+      equipmentCharge: '310', equipmentType: 'Chiller — centrifugal'
+    }
+  },
+  {
+    name: 'Investment, investee reports',
+    desc: 'Investee discloses Scope 1+2; equity share is on file.',
+    expect: 'Investment-specific',
+    values: {
+      activityCategory: 'investments', activityType: 'Equity Investment', reportingYear: '2026',
+      country: 'India', region: 'Maharashtra',
+      investeeEmissions: '48200', ownershipShare: '18.5',
+      investmentValue: '450000000', currency: 'INR', sectorCode: 'Basic metals'
+    }
+  },
+  {
+    name: 'Distance with no unit',
+    desc: 'A number without a unit. Validation stops the record before matching.',
+    expect: 'Validation failure', tone: 'clay',
+    values: {
+      activityCategory: 'businessTravel', activityType: 'Air Travel', reportingYear: '2026',
+      country: 'India', region: 'Tamil Nadu',
+      distance: '1200', distanceUnit: '', mode: 'Air — Short Haul (<1,600 km)'
+    }
+  }
+];
+
+/* ---------------------------------------------------------- 5. DERIVED --- */
+/* Rule ids and priorities are assigned here so the data above stays readable
+   and priorities can never drift out of sequence with the array order.      */
+
+CATEGORIES.forEach(function (cat) {
+  cat.rules.forEach(function (rule, i) {
+    rule.priority = i + 1;
+    rule.id = cat.table.split('-')[0] + '-R' + (i + 1);
+    rule.label = rule.requires.map(function (f) { return FIELDS[f].short; }).join(' + ');
+  });
+});
+
+const CATEGORY_BY_ID = {};
+CATEGORIES.forEach(function (c) { CATEGORY_BY_ID[c.id] = c; });
+
+const CORE_FIELDS = [
+  'distance', 'mode', 'fuelQuantity', 'fuelType',
+  'energyConsumption', 'gridRegion', 'spend', 'contractualInstrument'
+];
+
+</script>
+<script>
+/* ==========================================================================
+   SustainGHG - Methodology Prediction Engine :: THE ENGINE
+   --------------------------------------------------------------------------
+   Pure logic. No DOM, no globals, no defaults, no guessing. Given the same
+   activity record it always returns the same prediction - that is the whole
+   point of the module. The UI in ui.js only displays what these return.
+   ========================================================================== */
+
+var esc = function (s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+};
+var fmtNum = function (v) {
+  var n = Number(v);
+  if (!isFinite(n)) return String(v);
+  return n.toLocaleString('en-IN', { maximumFractionDigits: 4 });
+};
+
+/* ============================ 2. THE ENGINE ==============================
+   Pure. No DOM, no defaults, no inference. Given the same record it returns
+   the same prediction, which is the entire point of the module.            */
+
+/* A field counts as present when it holds a value the table can read.
+   A numeric zero is not an activity; a blank select is not a choice.       */
+function isPresent(values, id) {
+  const v = values[id];
+  if (v === undefined || v === null || String(v).trim() === '') return false;
+  if (FIELDS[id] && FIELDS[id].kind === 'number') {
+    const n = Number(v);
+    return isFinite(n) && n > 0;
+  }
+  return true;
+}
+
+/* Every field the current table can read, including unit companions. */
+function usedFieldsOf(cat) {
+  const set = new Set(['activityCategory', 'activityType', 'reportingYear', 'country']);
+  cat.rules.forEach(function (r) {
+    r.requires.concat(r.optional || []).forEach(function (f) {
+      set.add(f);
+      if (FIELDS[f] && FIELDS[f].unitOf) set.add(FIELDS[f].unitOf);
+    });
+  });
+  return set;
+}
+
+/* --- validation ---------------------------------------------------------- */
+
+function validate(values, cat) {
+  const checks = [];
+  const errors = [];
+  const warnings = [];
+  const YEAR_MIN = 2021, YEAR_MAX = 2027;
+
+  /* 1 - category identified */
+  checks.push({
+    name: 'Activity category identified',
+    status: 'pass',
+    detail: cat.table + ' ' + cat.tableVersion
+  });
+
+  /* 2 - required fields present */
+  const readable = cat.fields.filter(function (f) { return isPresent(values, f); });
+  if (!values.activityType) {
+    warnings.push('No activity template selected. Template narrows expected inputs but does not change rule priority.');
+  }
+  if (readable.length === 0) {
+    warnings.push('No measurable input was supplied for this category. Every rule will fail its input test.');
+  }
+  checks.push({
+    name: 'Required fields checked',
+    status: readable.length === 0 ? 'warn' : 'pass',
+    detail: readable.length + ' of ' + cat.fields.length + ' inputs populated'
+  });
+
+  /* 3 - units */
+  let unitsChecked = 0;
+  Object.keys(FIELDS).forEach(function (id) {
+    const f = FIELDS[id];
+    if (!f.unitOf || !isPresent(values, id)) return;
+    unitsChecked++;
+    const unit = values[f.unitOf];
+    const allowed = FIELDS[f.unitOf].options;
+    if (!unit || String(unit).trim() === '') {
+      errors.push(f.label + ' was given as ' + fmtNum(values[id]) +
+        ' with no unit. The engine will not assume one.');
+    } else if (allowed.indexOf(unit) === -1) {
+      errors.push(f.label + ' carries unit "' + unit + '", which is not in the governed ' +
+        FIELDS[f.unitOf].dim + ' unit set.');
+    }
+  });
+  checks.push({
+    name: 'Units validated',
+    status: errors.length ? 'fail' : 'pass',
+    detail: unitsChecked === 0 ? 'no quantities to check' :
+      unitsChecked + ' quantity/unit ' + (unitsChecked === 1 ? 'pair' : 'pairs')
+  });
+
+  /* 4 - values */
+  const valueErrors = [];
+  Object.keys(values).forEach(function (id) {
+    const f = FIELDS[id];
+    if (!f || f.kind !== 'number') return;
+    const raw = String(values[id]).trim();
+    if (raw === '') return;
+    const n = Number(raw);
+    if (!isFinite(n)) valueErrors.push(f.label + ' is not a number.');
+    else if (n < 0) valueErrors.push(f.label + ' is negative (' + raw + '). Activity data cannot be below zero.');
+    else if (n === 0) warnings.push(f.label + ' is zero and will be read as "not provided".');
+  });
+  if (isPresent(values, 'leakRate') && Number(values.leakRate) > 100) {
+    valueErrors.push('Assumed Leak Rate is above 100%.');
+  }
+  if (isPresent(values, 'ownershipShare') && Number(values.ownershipShare) > 100) {
+    valueErrors.push('Ownership Share is above 100%.');
+  }
+  const yr = Number(values.reportingYear);
+  if (!isFinite(yr) || yr < YEAR_MIN || yr > YEAR_MAX) {
+    valueErrors.push('Reporting Year ' + values.reportingYear + ' is outside the open window ' +
+      YEAR_MIN + '-' + YEAR_MAX + '.');
+  }
+  valueErrors.forEach(function (e) { errors.push(e); });
+  checks.push({
+    name: 'Input values validated',
+    status: valueErrors.length ? 'fail' : 'pass',
+    detail: valueErrors.length ? valueErrors.length + ' rejected' : 'ranges and signs in bounds'
+  });
+
+  /* 5 - coherence: things that are legal but suspicious */
+  const u = values.distanceUnit;
+  if (u === 'tonne.km' && !isPresent(values, 'freightMass')) {
+    warnings.push('Distance is in tonne.km but no shipment weight was supplied. Confirm the distance is already weight-adjusted.');
+  }
+  if (u === 'passenger.km' && /Road — HGV|Sea — Container|Air — Freight|Rail — Freight/.test(values.mode || '')) {
+    warnings.push('passenger.km is paired with a freight mode. Check the unit against the movement type.');
+  }
+  if (isPresent(values, 'spend') && isPresent(values, 'distance')) {
+    warnings.push('Both spend and distance are present. Spend sits below distance in this table and will not be selected.');
+  }
+  if (cat.id === 'purchasedElectricity' && isPresent(values, 'gridRegion') && isPresent(values, 'contractualInstrument')) {
+    warnings.push('Grid region and a contractual instrument are both present. Dual reporting expects both figures; this run predicts the location-based method only.');
+  }
+  checks.push({
+    name: 'Cross-field coherence',
+    status: warnings.length ? 'warn' : 'pass',
+    detail: warnings.length ? warnings.length + ' advisory' : 'no conflicts'
+  });
+
+  return { checks: checks, errors: errors, warnings: warnings, ok: errors.length === 0 };
+}
+
+/* --- rule evaluation ----------------------------------------------------- */
+
+function evaluate(values, cat) {
+  const evaluations = cat.rules.map(function (rule) {
+    const present = [], missing = [];
+    rule.requires.forEach(function (f) {
+      (isPresent(values, f) ? present : missing).push(f);
+    });
+    const optionalPresent = (rule.optional || []).filter(function (f) { return isPresent(values, f); });
+    return {
+      rule: rule,
+      satisfied: missing.length === 0,
+      present: present,
+      missing: missing,
+      optionalPresent: optionalPresent,
+      status: 'pending'
+    };
+  });
+
+  let matched = null;
+  evaluations.forEach(function (e) {
+    if (e.satisfied && !matched) { matched = e; e.status = 'hit'; }
+    else if (e.satisfied) { e.status = 'lower'; }
+    else { e.status = 'miss'; }
+  });
+
+  const code = matched ? matched.rule.methodology : 'INSUFFICIENT';
+  return {
+    category: cat,
+    evaluations: evaluations,
+    matched: matched,
+    methodologyCode: code,
+    methodology: METHODOLOGIES[code],
+    fieldsRead: cat.rules.reduce(function (acc, r) {
+      r.requires.forEach(function (f) { if (acc.indexOf(f) === -1) acc.push(f); });
+      return acc;
+    }, [])
+  };
+}
+
+/* --- a stable fingerprint of the record, to make determinism visible ----- */
+function recordHash(values, cat) {
+  const keys = Object.keys(values).filter(function (k) { return String(values[k]).trim() !== ''; }).sort();
+  const canon = cat.id + '|' + keys.map(function (k) { return k + '=' + values[k]; }).join('|');
+  let h = 0x811c9dc5;
+  for (let i = 0; i < canon.length; i++) {
+    h ^= canon.charCodeAt(i);
+    h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+  }
+  return ('00000000' + h.toString(16)).slice(-8).toUpperCase();
+}
+
+/* --- narrative built from the evaluation, never hand-written ------------- */
+
+function explain(run) {
+  const cat = run.category;
+  if (run.matched) {
+    const r = run.matched.rule;
+    const names = run.matched.present.map(function (f) { return '<em>' + esc(FIELDS[f].short) + '</em>'; });
+    const list = names.length === 1 ? names[0]
+      : names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+    const outranked = run.evaluations.filter(function (e) { return e.status === 'lower'; });
+    let txt = list + ' were provided on this activity record, satisfying <em>' + esc(r.id) +
+      '</em> — priority ' + r.priority + ' of ' + cat.rules.length + ' in the ' + esc(cat.label) +
+      ' decision table. Evaluation stopped at the first satisfied rule, so the predicted methodology is <em>' +
+      esc(run.methodology.name) + '</em>.';
+    if (outranked.length) {
+      txt += ' ' + (outranked.length === 1 ? 'Rule ' + outranked[0].rule.id + ' was also satisfied but sits'
+        : 'Rules ' + outranked.map(function (e) { return e.rule.id; }).join(' and ') + ' were also satisfied but sit') +
+        ' lower in the governed priority order, so ' + (outranked.length === 1 ? 'it was' : 'they were') +
+        ' recorded and not selected.';
+    }
+    return txt;
+  }
+  const gaps = run.evaluations.map(function (e) {
+    return e.rule.id + ' needs ' + e.missing.map(function (f) { return FIELDS[f].short; }).join(' and ');
+  });
+  return 'No rule in the ' + esc(cat.label) + ' decision table was satisfied. ' +
+    esc(gaps.join('; ')) + '. The engine does not substitute a default factor or fall back to a ' +
+    'lower-quality method that was not authorised for this record, so the activity is returned for completion.';
+}
+
+/* --- the audit trace ----------------------------------------------------- */
+
+function buildTrace(run, validation, values) {
+  const cat = run.category;
+  const steps = [];
+  const push = function (t, v, tone) { steps.push({ t: t, v: v, tone: tone || '' }); };
+
+  push('Activity category identified', cat.label + '  (' + cat.scope + ' · ' + cat.ghgCat + ')', 'ok');
+  push('Decision table loaded', cat.table + ' ' + cat.tableVersion + ' — ' + cat.rules.length + ' rules', 'ok');
+  push('Input validation completed',
+    validation.checks.filter(function (c) { return c.status === 'pass'; }).length + ' of ' +
+    validation.checks.length + ' checks clean, ' + validation.warnings.length + ' advisory',
+    validation.errors.length ? 'no' : 'ok');
+
+  run.evaluations.forEach(function (e) {
+    push('Rule ' + e.rule.priority + ' evaluated', e.rule.id + ' — ' + e.rule.label);
+    if (e.satisfied) {
+      push('Required inputs present', 'YES — ' + e.present.map(function (f) {
+        return FIELDS[f].short + '=' + (FIELDS[f].kind === 'number' ? fmtNum(values[f]) : values[f]);
+      }).join(', '), 'ok');
+      push(e.status === 'hit' ? 'Rule matched' : 'Rule matched but outranked',
+        METHODOLOGIES[e.rule.methodology].name +
+        (e.status === 'hit' ? '' : ' — priority ' + e.rule.priority + ' below the selected rule'),
+        e.status === 'hit' ? 'ok' : '');
+    } else {
+      push('Required inputs present', 'NO — missing ' + e.missing.map(function (f) {
+        return FIELDS[f].short;
+      }).join(', '), 'no');
+    }
+  });
+
+  if (run.matched) {
+    push('Prediction completed',
+      run.methodology.name + ' — ' + run.methodology.tier + ' data, ' +
+      run.methodology.confidence.toLowerCase() + ' confidence', 'ok');
+  } else {
+    push('Prediction halted', 'Insufficient Data — no governed rule satisfied', 'no');
+  }
+  return steps;
+}
+
+function auditPayload(run, validation, values) {
+  const cat = run.category;
+  const input = {};
+  Object.keys(values).forEach(function (k) {
+    if (String(values[k]).trim() !== '') input[k] = values[k];
+  });
+  return {
+    predictionId: run.predictionId,
+    generatedAt: run.generatedAt,
+    inputFingerprint: run.hash,
+    engine: {
+      type: 'deterministic-rule-table',
+      registryVersion: REGISTRY.version,
+      inference: 'none',
+      silentDefaults: false
+    },
+    activityRecord: input,
+    decisionTable: {
+      id: cat.table, version: cat.tableVersion,
+      category: cat.label, scope: cat.scope, ghgCategory: cat.ghgCat,
+      rulesInTable: cat.rules.length
+    },
+    validation: {
+      passed: validation.ok,
+      checks: validation.checks.map(function (c) { return { check: c.name, status: c.status, detail: c.detail }; }),
+      errors: validation.errors,
+      advisories: validation.warnings
+    },
+    ruleEvaluation: run.evaluations.map(function (e) {
+      return {
+        ruleId: e.rule.id, priority: e.rule.priority, requires: e.rule.requires,
+        satisfied: e.satisfied, missing: e.missing, outcome: e.status
+      };
+    }),
+    prediction: run.matched ? {
+      methodology: run.methodologyCode,
+      methodologyName: run.methodology.name,
+      ruleMatched: run.matched.rule.id,
+      priority: run.matched.rule.priority,
+      dataQualityTier: run.methodology.tier,
+      confidence: run.methodology.confidence,
+      status: 'SUCCESSFULLY_PREDICTED'
+    } : {
+      methodology: 'INSUFFICIENT',
+      methodologyName: 'Insufficient Data',
+      ruleMatched: null, priority: null,
+      dataQualityTier: null, confidence: 'None',
+      status: 'INSUFFICIENT_DATA'
+    }
+  };
+}
+
+</script>
+<script>
+/* ==========================================================================
+   SustainGHG - Methodology Prediction Engine :: THE INTERFACE
+   --------------------------------------------------------------------------
+   Displays what engine.js works out. Keeps the everyday path short: pick an
+   example or fill in a few fields, press one button, read one answer. All
+   the working-out lives behind "Show how we decided".
+   ========================================================================== */
+
+var $ = function (sel, root) { return (root || document).querySelector(sel); };
+var el = function (tag, cls, html) {
+  var n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (html !== undefined) n.innerHTML = html;
+  return n;
+};
+var REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var timers = [];
+var clearTimers = function () { timers.forEach(clearTimeout); timers = []; };
+var at = function (ms, fn) { timers.push(setTimeout(fn, REDUCED ? 0 : ms)); };
+var scrollTo_ = function (node, block) {
+  node.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: block || 'start' });
+};
+
+var ICONS = {
+  check:   'M3 8.5l3.2 3.2L13 4.8',
+  x:       'M4 4l8 8M12 4l-8 8',
+  dash:    'M4 8h8',
+  right:   'M6 3.5l5 4.5-5 4.5',
+  down:    'M3.5 6l4.5 5 4.5-5',
+  alert:   'M8 2.4L14.4 13.4H1.6zM8 6.6v3.1M8 11.4v.1',
+  info:    'M8 2.4a5.6 5.6 0 100 11.2A5.6 5.6 0 008 2.4zM8 7.4v3.6M8 5.2v.1',
+  copy:    'M5.5 5.5h8v8h-8zM10.5 5.5v-3h-8v8h3',
+  leaf:    'M3 13V6.5M3 6.5h5a2.5 2.5 0 002.5-2.5V3M3 9.5h7.5a2.5 2.5 0 012.5 2.5V13'
+};
+var ico = function (name, size) {
+  var s = size || 16;
+  return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 16 16" aria-hidden="true" fill="none" ' +
+    'stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="' + ICONS[name] + '"/></svg>';
+};
+
+/* --- plain words for things the tables call by their technical name ------ */
+
+var FRIENDLY = {
+  mode: 'How they travelled',
+  gridRegion: 'Which electricity grid',
+  contractualInstrument: 'Green energy certificate or contract',
+  sectorCode: 'Industry sector',
+  supplierData: 'Data received from the supplier',
+  freightMass: 'How much was shipped',
+  materialMass: 'How much was bought',
+  steamSource: 'What the supplier reports',
+  processingEnergy: 'Energy the customer uses to process it',
+  investeeEmissions: 'Emissions the investee reported',
+  refrigerantRecharge: 'Refrigerant topped up (kg)',
+  equipmentCharge: 'Refrigerant the equipment holds (kg)',
+  leakRate: 'Expected yearly leak rate (%)'
+};
+var labelOf = function (id) { return FRIENDLY[id] || FIELDS[id].label; };
+
+var TIER_PLAIN = {
+  'Primary':   'Based on the actual activity data you provided.',
+  'Secondary': 'Based on an industry average, because exact data was not available.',
+  'Proxy':     'A rough estimate from money spent. Fine for screening, not for reporting.'
+};
+
+/* ------------------------------------------------------------- the state -- */
+
+var state = {
+  tab: 'find',
+  values: {},
+  scenario: null,
+  showAllExamples: false,
+  libScope: 'All',
+  libSearch: '',
+  seq: 0,
+  hasResult: false
+};
+
+var currentCategory = function () {
+  return CATEGORY_BY_ID[state.values.activityCategory] || CATEGORIES[0];
+};
+
+/* --------------------------------------------------------------- examples -- */
+
+function renderScenarios() {
+  var host = $('#scenarioGrid');
+  host.innerHTML = '';
+  var shown = state.showAllExamples ? SCENARIOS : SCENARIOS.slice(0, 6);
+  shown.forEach(function (s, i) {
+    var b = el('button', 'example');
+    b.type = 'button';
+    b.setAttribute('aria-pressed', state.scenario === i ? 'true' : 'false');
+    b.innerHTML =
+      '<span class="example-name">' + esc(s.name) + '</span>' +
+      '<span class="example-desc">' + esc(s.desc) + '</span>' +
+      '<span class="example-out' + (s.tone === 'clay' ? ' warn' : '') + '">' +
+      ico('right', 11) + esc(s.expect) + '</span>';
+    b.addEventListener('click', function () { loadScenario(i); });
+    host.appendChild(b);
+  });
+  $('#moreExamples').textContent = state.showAllExamples
+    ? 'Show fewer examples'
+    : 'Show all ' + SCENARIOS.length + ' examples';
+}
+
+function loadScenario(i, quiet) {
+  var s = SCENARIOS[i];
+  state.scenario = i;
+  state.values = {};
+  Object.keys(s.values).forEach(function (k) { state.values[k] = s.values[k]; });
+
+  var cat = CATEGORY_BY_ID[state.values.activityCategory];
+  cat.fields.forEach(function (f) {
+    var u = FIELDS[f].unitOf;
+    if (u && state.values[u] === undefined && isPresent(state.values, f)) {
+      state.values[u] = FIELDS[u].options[0];
+    }
+  });
+
+  clearOutput();
+  renderScenarios();
+  renderForm();
+  if (!quiet) scrollTo_($('#inputCard'), 'center');
+}
+
+/* ------------------------------------------------------------------- form -- */
+
+function optionsFor(id, cat) {
+  if (cat && cat.fieldOptions && cat.fieldOptions[id]) return cat.fieldOptions[id];
+  return FIELDS[id].options || [];
+}
+
+function inputFor(id, cat) {
+  var f = FIELDS[id], node;
+  if (f.kind === 'select') {
+    node = el('select');
+    node.appendChild(new Option(f.context ? 'Choose…' : 'Not provided', ''));
+    optionsFor(id, cat).forEach(function (o) { node.appendChild(new Option(o, o)); });
+    node.value = state.values[id] || '';
+  } else {
+    node = el('input');
+    node.type = f.kind === 'number' ? 'number' : 'text';
+    if (f.kind === 'number') { node.min = '0'; node.step = 'any'; node.inputMode = 'decimal'; }
+    node.placeholder = f.placeholder || '';
+    node.value = state.values[id] || '';
+  }
+  node.id = 'fld-' + id;
+  node.addEventListener('input', function () { onFieldChange(id, node.value); });
+  node.addEventListener('change', function () { onFieldChange(id, node.value); });
+  return node;
+}
+
+function fieldRow(id, cat, small) {
+  var f = FIELDS[id];
+  var wrap = el('div', 'field' + (small ? ' field-sm' : ''));
+  var lab = el('label', 'field-label', esc(labelOf(id)));
+  lab.setAttribute('for', 'fld-' + id);
+  wrap.appendChild(lab);
+  if (f.unitOf) {
+    var pair = el('div', 'pair');
+    pair.appendChild(inputFor(id, cat));
+    var u = inputFor(f.unitOf, cat);
+    u.setAttribute('aria-label', FIELDS[f.unitOf].label);
+    pair.appendChild(u);
+    wrap.appendChild(pair);
+  } else {
+    wrap.appendChild(inputFor(id, cat));
+  }
+  return wrap;
+}
+
+function renderForm() {
+  var cat = currentCategory();
+  var host = $('#formBody');
+  host.innerHTML = '';
+
+  /* what kind of activity */
+  var top = el('div', 'form-grid');
+
+  var catField = el('div', 'field');
+  var catLab = el('label', 'field-label', 'What kind of activity?');
+  catLab.setAttribute('for', 'fld-activityCategory');
+  catField.appendChild(catLab);
+  var sel = el('select');
+  sel.id = 'fld-activityCategory';
+  ['Scope 1', 'Scope 2', 'Scope 3'].forEach(function (scope) {
+    var g = el('optgroup');
+    g.label = scope;
+    CATEGORIES.filter(function (c) { return c.scope === scope; })
+      .forEach(function (c) { g.appendChild(new Option(c.label, c.id)); });
+    sel.appendChild(g);
+  });
+  sel.value = cat.id;
+  sel.addEventListener('change', function () {
+    state.values = {
+      activityCategory: sel.value,
+      activityType: CATEGORY_BY_ID[sel.value].templates[0],
+      reportingYear: state.values.reportingYear || '2026',
+      country: state.values.country || 'India',
+      region: state.values.region || ''
+    };
+    state.scenario = null;
+    clearOutput(); renderScenarios(); renderForm();
+    var first = $('#formBody .field-block input, #formBody .field-block select');
+    if (first) first.focus();
+  });
+  catField.appendChild(sel);
+  top.appendChild(catField);
+
+  var tField = el('div', 'field');
+  var tLab = el('label', 'field-label', 'Type of record');
+  tLab.setAttribute('for', 'fld-activityType');
+  tField.appendChild(tLab);
+  var tSel = el('select');
+  tSel.id = 'fld-activityType';
+  tSel.appendChild(new Option('Choose…', ''));
+  cat.templates.forEach(function (t) { tSel.appendChild(new Option(t, t)); });
+  tSel.value = state.values.activityType || '';
+  tSel.addEventListener('change', function () { onFieldChange('activityType', tSel.value); });
+  tField.appendChild(tSel);
+  top.appendChild(tField);
+  host.appendChild(top);
+
+  /* what you know about it */
+  var block = el('div', 'field-block');
+  block.appendChild(el('p', 'block-hint',
+    'Fill in whatever you have. Anything you leave blank is simply treated as unknown — ' +
+    'we never invent a value.'));
+  var grid = el('div', 'form-grid');
+  cat.fields.forEach(function (id) { grid.appendChild(fieldRow(id, cat)); });
+  block.appendChild(grid);
+  host.appendChild(block);
+
+  /* where and when */
+  var ctx = el('div', 'field-block quiet');
+  ctx.appendChild(el('p', 'block-hint', 'Where and when'));
+  var cgrid = el('div', 'form-grid');
+  ['country', 'region', 'reportingYear'].forEach(function (id) {
+    cgrid.appendChild(fieldRow(id, cat, true));
+  });
+  ctx.appendChild(cgrid);
+  host.appendChild(ctx);
+}
+
+function onFieldChange(id, value) {
+  state.values[id] = value;
+  state.scenario = null;
+  renderScenarios();
+  if (state.hasResult) {
+    clearOutput();
+    $('#staleNote').hidden = false;
+  }
+}
+
+function clearOutput() {
+  clearTimers();
+  state.hasResult = false;
+  $('#output').innerHTML = '';
+  $('#staleNote').hidden = true;
+}
+
+/* ---------------------------------------------------------------- predict -- */
+
+function predict() {
+  clearTimers();
+  var cat = currentCategory();
+  var values = state.values;
+  var out = $('#output');
+  out.innerHTML = '';
+  $('#staleNote').hidden = true;
+  state.seq++;
+
+  var validation = validate(values, cat);
+
+  var prog = el('div', 'progress');
+  var lines = [
+    'Checking what you entered',
+    'Loading the rules for ' + cat.label.toLowerCase(),
+    'Matching your data against them'
+  ];
+  prog.innerHTML = lines.map(function (t, i) {
+    return '<div class="prog-row" data-p="' + i + '"><span class="prog-ico"><span class="spinner"></span></span>' +
+      '<span>' + esc(t) + '</span></div>';
+  }).join('');
+  out.appendChild(prog);
+  scrollTo_(prog, 'center');
+
+  lines.forEach(function (t, i) {
+    at(200 + i * 260, function () {
+      var row = prog.querySelector('[data-p="' + i + '"]');
+      var bad = (i === 0 && !validation.ok);
+      row.className = 'prog-row ' + (bad ? 'bad' : 'good');
+      row.querySelector('.prog-ico').innerHTML = ico(bad ? 'x' : 'check', 14);
+    });
+  });
+
+  if (!validation.ok) {
+    at(200 + 260, function () {
+      prog.querySelectorAll('[data-p="1"],[data-p="2"]').forEach(function (r) { r.remove(); });
+      showValidationProblem(validation, out);
+    });
+    return;
+  }
+
+  at(200 + lines.length * 260 + 220, function () {
+    prog.remove();
+    var run = evaluate(values, cat);
+    run.predictionId = 'PRD-' + new Date().getFullYear() + '-' + String(state.seq).padStart(4, '0');
+    run.generatedAt = new Date().toISOString();
+    run.hash = recordHash(values, cat);
+    showAnswer(run, validation, out);
+  });
+}
+
+/* --------------------------------------------------------- the three ends -- */
+
+function showValidationProblem(validation, out) {
+  state.hasResult = true;
+  var card = el('section', 'answer bad');
+  card.innerHTML =
+    '<div class="answer-mark">' + ico('alert', 22) + '</div>' +
+    '<h2 class="answer-name small">Something needs fixing first</h2>' +
+    '<p class="answer-why">We stopped before matching any rule. We will not guess at a missing ' +
+    'unit or accept a value that cannot be right.</p>' +
+    '<ul class="fixlist">' + validation.errors.map(function (e) {
+      return '<li>' + esc(e) + '</li>';
+    }).join('') + '</ul>' +
+    '<div class="answer-actions"><button class="btn" type="button" data-act="edit">Go back and fix it</button></div>';
+  out.appendChild(card);
+  wireActions(card);
+  scrollTo_(card, 'center');
+}
+
+function showAnswer(run, validation, out) {
+  state.hasResult = true;
+  var cat = run.category;
+  var m = run.methodology;
+  var ok = !!run.matched;
+  var card = el('section', 'answer' + (ok ? '' : ' warn'));
+
+  if (ok) {
+    var r = run.matched.rule;
+    var given = run.matched.present.map(function (f) {
+      var v = FIELDS[f].kind === 'number' ? fmtNum(state.values[f]) : state.values[f];
+      var unit = FIELDS[f].unitOf ? ' ' + (state.values[FIELDS[f].unitOf] || '') : '';
+      return '<b>' + esc(labelOf(f)) + '</b> (' + esc(v + unit) + ')';
+    });
+    var givenText = given.length === 1 ? given[0]
+      : given.slice(0, -1).join(', ') + ' and ' + given[given.length - 1];
+
+    card.innerHTML =
+      '<div class="answer-mark">' + ico('check', 22) + '</div>' +
+      '<p class="answer-lead">Use the</p>' +
+      '<h2 class="answer-name">' + esc(m.name) + ' method</h2>' +
+      '<p class="answer-why">You gave us ' + givenText + '. That is rule ' + r.priority +
+      ' of ' + cat.rules.length + ' for ' + esc(cat.label.toLowerCase()) + ', and it is the ' +
+      'best method available for what you know.</p>' +
+      '<div class="answer-facts">' +
+        fact('Activity', cat.label) +
+        fact('Rule matched', r.label) +
+        fact('Confidence', m.confidence) +
+      '</div>' +
+      '<p class="answer-tier">' + ico('info', 14) + ' ' + esc(TIER_PLAIN[m.tier] || '') + '</p>' +
+      '<div class="answer-actions">' +
+        '<button class="btn btn-primary" type="button" data-act="another">Try another</button>' +
+        '<button class="btn" type="button" data-act="edit">Change my answers</button>' +
+      '</div>';
+  } else {
+    card.innerHTML =
+      '<div class="answer-mark">' + ico('info', 22) + '</div>' +
+      '<h2 class="answer-name small">We need a little more</h2>' +
+      '<p class="answer-why">Nothing you entered is enough to pick a method for ' +
+      esc(cat.label.toLowerCase()) + '. Add any <b>one</b> of these and we can answer:</p>' +
+      '<ul class="optionlist">' + run.evaluations.map(function (e) {
+        return '<li><button type="button" class="optbtn" data-fill="' + esc(e.missing[0]) + '">' +
+          '<span class="opt-need">' + e.missing.map(function (f) {
+            return esc(labelOf(f));
+          }).join(' and ') + '</span>' +
+          '<span class="opt-arrow">' + ico('right', 11) + '</span>' +
+          '<span class="opt-meth">' + esc(METHODOLOGIES[e.rule.methodology].name) + '</span></button></li>';
+      }).join('') + '</ul>' +
+      '<div class="answer-actions">' +
+        '<button class="btn" type="button" data-act="edit">Go back to the form</button>' +
+      '</div>';
+  }
+
+  out.appendChild(card);
+  wireActions(card);
+  out.appendChild(buildDetails(run, validation));
+  scrollTo_(card, 'center');
+}
+
+function fact(k, v) {
+  return '<div class="fact"><span class="fact-k">' + esc(k) + '</span>' +
+    '<span class="fact-v">' + esc(v) + '</span></div>';
+}
+
+function wireActions(card) {
+  card.querySelectorAll('[data-act]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (b.dataset.act === 'another') {
+        clearOutput();
+        scrollTo_($('#examplesCard'), 'start');
+      } else {
+        scrollTo_($('#inputCard'), 'start');
+      }
+    });
+  });
+  card.querySelectorAll('[data-fill]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      scrollTo_($('#inputCard'), 'start');
+      var node = $('#fld-' + b.dataset.fill);
+      if (node) at(REDUCED ? 0 : 420, function () { node.focus(); });
+    });
+  });
+}
+
+/* ----------------------------------------------------- show how we decided -- */
+
+function buildDetails(run, validation) {
+  var cat = run.category;
+  var det = el('details', 'details');
+  var steps = buildTrace(run, validation, state.values);
+
+  det.innerHTML =
+    '<summary><span class="sum-t">Show how we decided</span>' +
+    '<span class="sum-caret">' + ico('down', 15) + '</span></summary>' +
+    '<div class="details-body">' +
+
+      '<div class="det-block"><h3>1. We checked what you entered</h3>' +
+      '<ul class="checklist">' + validation.checks.map(function (c) {
+        return '<li class="' + c.status + '">' + ico(c.status === 'fail' ? 'x' : 'check', 13) +
+          '<span>' + esc(c.name) + '</span><em>' + esc(c.detail) + '</em></li>';
+      }).join('') + '</ul>' +
+      (validation.warnings.length
+        ? '<p class="det-note">' + ico('info', 13) + ' ' + esc(validation.warnings[0]) + '</p>' : '') +
+      '</div>' +
+
+      '<div class="det-block"><h3>2. We loaded the rules for ' + esc(cat.label.toLowerCase()) + '</h3>' +
+      '<p class="det-note">Rules are tried from the top. The first one whose inputs you have ' +
+      'is the one we use — better data always wins over a rough estimate.</p>' +
+      '<div class="table-wrap">' + tableHTML(cat, run, false) + '</div></div>' +
+
+      '<div class="det-block"><h3>3. We checked each rule in turn</h3>' +
+      '<ul class="rulelist">' + run.evaluations.map(function (e) {
+        var cls = e.status === 'hit' ? 'hit' : e.status === 'lower' ? 'lower' : 'miss';
+        var verdict = e.status === 'hit' ? 'This is the one'
+          : e.status === 'lower' ? 'Would work, but ranks lower' : 'Not enough data';
+        var why = e.status === 'miss'
+          ? 'Missing ' + e.missing.map(function (f) { return labelOf(f); }).join(' and ') + '.'
+          : 'You have ' + e.present.map(function (f) { return labelOf(f); }).join(' and ') + '.';
+        return '<li class="' + cls + '">' +
+          '<span class="rl-ico">' + ico(e.status === 'hit' ? 'check' : e.status === 'miss' ? 'x' : 'dash', 13) + '</span>' +
+          '<span class="rl-main"><b>Rule ' + e.rule.priority + ' — ' + esc(e.rule.label) + '</b>' +
+          '<span class="rl-why">' + esc(why) + '</span></span>' +
+          '<span class="rl-verdict">' + esc(verdict) + '</span></li>';
+      }).join('') + '</ul></div>' +
+
+      '<div class="det-block"><h3>4. Step-by-step record</h3>' +
+      '<p class="det-note">Kept for audit. The same activity record always produces this ' +
+      'same result — there is no model and no randomness anywhere in this module.</p>' +
+      '<ol class="trace">' + steps.map(function (s) {
+        return '<li class="' + s.tone + '"><span class="tr-t">' + esc(s.t) + '</span>' +
+          '<span class="tr-v">' + esc(s.v) + '</span></li>';
+      }).join('') + '</ol></div>' +
+
+      '<div class="det-foot">' +
+      '<span class="det-meta">' + esc(run.predictionId) + ' · table ' + esc(cat.table) + ' ' +
+      esc(cat.tableVersion) + ' · record ' + esc(run.hash) + '</span>' +
+      '<button class="btn btn-sm" type="button" id="copyJson">' + ico('copy', 13) + ' Copy full record</button>' +
+      '</div>' +
+    '</div>';
+
+  det.querySelector('#copyJson').addEventListener('click', function (ev) {
+    var btn = ev.currentTarget;
+    var text = JSON.stringify(auditPayload(run, validation, state.values), null, 2);
+    var done = function () {
+      btn.innerHTML = ico('check', 13) + ' Copied';
+      setTimeout(function () { btn.innerHTML = ico('copy', 13) + ' Copy full record'; }, 1600);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () {});
+    } else {
+      var ta = el('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) {}
+      document.body.removeChild(ta);
+    }
+  });
+  return det;
+}
+
+function tableHTML(cat, run, withNotes) {
+  var rows = cat.rules.map(function (rule, i) {
+    var m = METHODOLOGIES[rule.methodology];
+    var ev = run ? run.evaluations[i] : null;
+    var needs = rule.requires.map(function (f) {
+      var cls = ev ? (ev.present.indexOf(f) > -1 ? ' ok' : ' miss') : '';
+      return '<span class="need' + cls + '">' + esc(labelOf(f)) + '</span>';
+    }).join('<span class="need-plus">+</span>');
+    var result = ev
+      ? (ev.status === 'hit' ? '<span class="res ok">Used</span>'
+        : ev.status === 'lower' ? '<span class="res low">Ranks lower</span>'
+        : '<span class="res no">Not enough data</span>')
+      : '<span class="res">' + esc(m.confidence) + ' confidence</span>';
+    return '<tr class="' + (ev && ev.status === 'hit' ? 'is-hit' : '') + '">' +
+      '<td class="c-pri">' + rule.priority + '</td>' +
+      '<td><div class="needs">' + needs + '</div>' +
+      (withNotes ? '<p class="rule-note">' + esc(rule.note) + '</p>' : '') + '</td>' +
+      '<td class="c-meth"><b>' + esc(m.name) + '</b></td>' +
+      '<td class="c-res">' + result + '</td></tr>';
+  }).join('');
+
+  return '<table class="dt"><thead><tr><th>Order</th><th>What you need</th>' +
+    '<th>Method</th><th>' + (run ? 'Result' : 'Data quality') + '</th></tr></thead><tbody>' + rows +
+    '<tr class="is-dim"><td class="c-pri">—</td><td><span class="need">None of the above</span></td>' +
+    '<td class="c-meth"><b>Not enough data</b></td><td class="c-res">' +
+    (run && !run.matched ? '<span class="res no">This record</span>' : '<span class="res">—</span>') +
+    '</td></tr></tbody></table>';
+}
+
+/* ---------------------------------------------------------------- library -- */
+
+function renderLibrary() {
+  var host = $('#libraryView');
+  var q = state.libSearch.trim().toLowerCase();
+  var cats = CATEGORIES.filter(function (c) {
+    if (state.libScope !== 'All' && c.scope !== state.libScope) return false;
+    if (!q) return true;
+    return (c.label + ' ' + c.ghgCat + ' ' + c.templates.join(' ') + ' ' +
+      c.rules.map(function (r) { return r.label + ' ' + METHODOLOGIES[r.methodology].name; }).join(' ')
+    ).toLowerCase().indexOf(q) > -1;
+  });
+  var ruleCount = CATEGORIES.reduce(function (a, c) { return a + c.rules.length; }, 0);
+
+  host.innerHTML =
+    '<div class="page wide">' +
+      '<section class="intro">' +
+      '<h1>All the rules</h1>' +
+      '<p>Every activity we can pick a method for. Rules are listed in the order we try them: ' +
+      'the best-quality method first, a rough estimate from spending last. Nothing else decides ' +
+      'the answer — change a table here and the tool behaves differently, which is the point.</p>' +
+      '<p class="stats"><b>' + CATEGORIES.length + '</b> activities · <b>' + ruleCount +
+      '</b> rules · <b>' + (Object.keys(METHODOLOGIES).length - 1) + '</b> methods</p>' +
+      '</section>' +
+
+      '<div class="lib-bar">' +
+        '<input type="search" id="libSearch" placeholder="Search activities, rules or methods…" ' +
+        'value="' + esc(state.libSearch) + '" aria-label="Search the rules">' +
+        '<div class="filters">' + ['All', 'Scope 1', 'Scope 2', 'Scope 3'].map(function (s) {
+          return '<button type="button" class="filter" data-scope="' + s + '" aria-pressed="' +
+            (state.libScope === s ? 'true' : 'false') + '">' + s + '</button>';
+        }).join('') + '</div>' +
+      '</div>' +
+
+      (cats.length ? cats.map(function (c) {
+        return '<section class="cat"><div class="cat-head">' +
+          '<h2>' + esc(c.label) + '</h2>' +
+          '<span class="cat-meta">' + esc(c.scope) + ' · ' + esc(c.ghgCat) + ' · ' +
+          c.rules.length + ' rules</span></div>' +
+          '<div class="table-wrap">' + tableHTML(c, null, true) + '</div></section>';
+      }).join('') : '<p class="empty">Nothing matches “' + esc(state.libSearch) + '”.</p>') +
+
+      '<section class="cat"><div class="cat-head"><h2>What each method means</h2></div>' +
+      '<div class="table-wrap"><table class="dt"><thead><tr><th>Method</th><th>What it does</th>' +
+      '<th>Data quality</th></tr></thead><tbody>' +
+      Object.keys(METHODOLOGIES).map(function (k) {
+        var m = METHODOLOGIES[k];
+        return '<tr><td class="c-meth"><b>' + esc(m.name) + '</b></td>' +
+          '<td>' + esc(m.blurb) + '</td>' +
+          '<td class="c-res"><span class="res">' + esc(m.tier === '—' ? '—' :
+            m.tier + ' · ' + m.confidence + ' confidence') + '</span></td></tr>';
+      }).join('') + '</tbody></table></div></section>' +
+    '</div>';
+
+  host.querySelectorAll('.filter').forEach(function (b) {
+    b.addEventListener('click', function () { state.libScope = b.dataset.scope; renderLibrary(); });
+  });
+  var search = $('#libSearch');
+  search.addEventListener('input', function () {
+    state.libSearch = search.value;
+    var pos = search.selectionStart;
+    renderLibrary();
+    var s2 = $('#libSearch');
+    s2.focus(); s2.setSelectionRange(pos, pos);
+  });
+}
+
+/* ----------------------------------------------------------------- chrome -- */
+
+function setTab(tab) {
+  state.tab = tab;
+  $('#findView').hidden = tab !== 'find';
+  $('#libraryView').hidden = tab !== 'library';
+  document.querySelectorAll('.tab').forEach(function (t) {
+    t.setAttribute('aria-selected', t.dataset.tab === tab ? 'true' : 'false');
+  });
+  if (tab === 'library') renderLibrary();
+  window.scrollTo({ top: 0, behavior: 'auto' });
+}
+
+function init() {
+  loadScenario(0, true);
+
+  $('#predictBtn').addEventListener('click', predict);
+  $('#resetBtn').addEventListener('click', function () {
+    state.scenario = null;
+    state.values = {
+      activityCategory: currentCategory().id, activityType: '',
+      reportingYear: '2026', country: 'India', region: ''
+    };
+    clearOutput(); renderScenarios(); renderForm();
+  });
+  $('#moreExamples').addEventListener('click', function () {
+    state.showAllExamples = !state.showAllExamples;
+    renderScenarios();
+  });
+  document.querySelectorAll('.tab').forEach(function (t) {
+    t.addEventListener('click', function () { setTab(t.dataset.tab); });
+  });
+  document.querySelectorAll('[data-ico]').forEach(function (n) {
+    n.innerHTML = ico(n.dataset.ico, Number(n.dataset.size || 16));
+  });
+
+  $('#footMeta').textContent =
+    CATEGORIES.length + ' activities · ' +
+    CATEGORIES.reduce(function (a, c) { return a + c.rules.length; }, 0) + ' rules · ' +
+    'rule set ' + REGISTRY.version;
+}
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+else init();
+
+</script>
+</body>
+</html>
