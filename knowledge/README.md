@@ -71,10 +71,17 @@ vectors blur exactly those distinctions. BM25 catches the phrase, embeddings
 catch the paraphrase, Reciprocal Rank Fusion combines them. `--compare` in the
 eval shows what each contributes.
 
-**Editions are modelled per section, not per document.** The IPCC 2019
-Refinement does not replace the 2006 Guidelines: the refined stationary
-combustion chapter is 5 pages against the 2006 edition's 47. Retrieval returns
-both and reports the edition; a reviewer decides.
+**Editions are modelled per section, not per document — and enforced.** The
+IPCC 2019 Refinement does not replace the 2006 Guidelines: the refined
+stationary combustion chapter is 5 pages against the 2006 edition's 47.
+
+Stating that policy is not enough. Measured, the 5-page amendment holds 5
+chunks against the 2006 chapter's 56, so on a general query it loses on volume
+alone and first appears at **rank 14** — invisible to anything reading the top
+5. `search()` therefore does two things: flags any hit whose family has a newer
+edition (`newer_edition`), and pulls the best passage from any unrepresented
+edition into the results (`found_by: "edition-coverage"`). Pass
+`all_editions=False` to switch it off.
 
 ---
 

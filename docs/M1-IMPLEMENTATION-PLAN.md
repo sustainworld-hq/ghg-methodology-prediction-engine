@@ -252,13 +252,20 @@ to the engine, the decision tables, or the shipped HTML page. No emission factor
 
 ## 9. Open decisions — needed from you
 
-**Q1 — Which model provider for M2?** M1 needs none. But M2 does, and the machine
-has `OPENAI_API_KEY` set with no Anthropic credential (`ANTHROPIC_API_KEY` unset,
-`ant` CLI not installed). I am not going to assume. If you want Claude for
-extraction, we need a key; if you want to use the OpenAI key already present,
-say so and I will plan M2 around it.
+**Q1 — Which model provider for M2? ANSWERED: Groq.** M1 needs none. M2 will
+use Groq (an OpenAI-compatible API serving open-weight models). The key must be
+read from the `GROQ_API_KEY` environment variable — it is never committed, and
+the key shared during this work should be rotated because it was transmitted in
+plaintext.
 
-**Q2 — Edition precedence policy.** When the 2019 Refinement amends a 2006
+**Q2 — Edition precedence policy. ANSWERED: (b), and now enforced in code.**
+Retrieval returns every edition and labels it. Stating the policy proved not to
+be enough: measured, the 5-page 2019 stationary-combustion amendment holds 5
+chunks against the 2006 chapter's 56, so it first appeared at rank 14 and was
+invisible to anything reading the top 5. `search()` now flags any hit whose
+family has a newer edition and pulls unrepresented editions into the results.
+
+**Q2 (original wording).** When the 2019 Refinement amends a 2006
 chapter, should retrieval (a) prefer 2019 and flag 2006 as superseded, (b) return
 both and let the reviewer choose, or (c) prefer whichever your reporting
 programme mandates? This is a governance call, not a technical one. My

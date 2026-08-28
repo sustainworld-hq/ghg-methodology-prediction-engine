@@ -27,9 +27,14 @@ POOL = 60           # how deep each retriever goes before fusion
 _K1, _B = 1.5, 0.75
 
 
+_BM25 = {}
+
+
 def _load_bm25():
-    with open(STORE / "bm25.pkl", "rb") as fh:
-        return pickle.load(fh)
+    if "v" not in _BM25:
+        with open(STORE / "bm25.pkl", "rb") as fh:
+            _BM25["v"] = pickle.load(fh)
+    return _BM25["v"]
 
 
 def _tokenize(text: str) -> list[str]:
@@ -52,19 +57,38 @@ def bm25_rank(bm25, query: str, k: int) -> list[str]:
     return [bm25["chunk_ids"][i] for i, _ in top]
 
 
-def dense_rank(query: str, k: int) -> list[str]:
+_DENSE = {}
+
+
+def _dense_handles():
+    """Load model, FAISS index and id map exactly once per process.
+
+    Reloading them per query segfaulted: the eval calls dense_rank 36 times
+    (12 queries x 3 modes) and repeatedly instantiating torch alongside
+    faiss.read_index crashes the interpreter. Caching is both the fix and a
+    large speedup.
+    """
+    if _DENSE:
+        return _DENSE
     import numpy as np
     import faiss
     from sentence_transformers import SentenceTransformer
 
     meta = json.loads((STORE / "index_meta.json").read_text(encoding="utf-8"))
-    model = SentenceTransformer(meta["model"])
-    q = model.encode([meta.get("query_prefix", "") + query],
-                     normalize_embeddings=True, convert_to_numpy=True).astype("float32")
-    index = faiss.read_index(str(STORE / "dense.faiss"))
-    ids = np.load(STORE / "dense_ids.npy", allow_pickle=True)
-    _, idx = index.search(q, min(k, index.ntotal))
-    return [str(ids[i]) for i in idx[0] if i >= 0]
+    _DENSE["meta"] = meta
+    _DENSE["model"] = SentenceTransformer(meta["model"])
+    _DENSE["index"] = faiss.read_index(str(STORE / "dense.faiss"))
+    _DENSE["ids"] = np.load(STORE / "dense_ids.npy", allow_pickle=True)
+    return _DENSE
+
+
+def dense_rank(query: str, k: int) -> list[str]:
+    h = _dense_handles()
+    q = h["model"].encode([h["meta"].get("query_prefix", "") + query],
+                          normalize_embeddings=True,
+                          convert_to_numpy=True).astype("float32")
+    _, idx = h["index"].search(q, min(k, h["index"].ntotal))
+    return [str(h["ids"][i]) for i in idx[0] if i >= 0]
 
 
 def rrf(rankings: list[list[str]], weights: list[float] | None = None) -> list[tuple[str, float]]:
@@ -91,8 +115,19 @@ def hydrate(con, chunk_ids: list[str]) -> dict:
     return {r["chunk_id"]: dict(r) for r in rows}
 
 
+def edition_map(con) -> dict[str, list[dict]]:
+    """family -> its editions, newest first."""
+    fam: dict[str, list[dict]] = {}
+    for r in con.execute(
+            "SELECT doc_id, family, edition, year, title FROM documents "
+            "WHERE status='active' ORDER BY year DESC"):
+        fam.setdefault(r["family"], []).append(dict(r))
+    return fam
+
+
 def search(query: str, k: int = 8, publisher: str | None = None,
-           scope: str | None = None, edition_year: int | None = None) -> list[dict]:
+           scope: str | None = None, edition_year: int | None = None,
+           all_editions: bool = True) -> list[dict]:
     con = connect()
     bm25 = _load_bm25()
 
@@ -134,7 +169,66 @@ def search(query: str, k: int = 8, publisher: str | None = None,
         })
         if len(out) >= k:
             break
+
+    if not all_editions:
+        return out
+
+    # Per-section supersession, delivered rather than merely stated.
+    #
+    # A 5-page 2019 amendment holds ~11x fewer chunks than the 47-page 2006
+    # chapter it amends, so on a general query it loses on volume alone and
+    # lands outside the top results. Returning only the superseded text would
+    # let M2 extract a rule from guidance that has since been amended, without
+    # anyone seeing that an amendment exists.
+    #
+    # So: flag every hit whose family has a newer edition, and pull the best
+    # available passage from any missing edition in alongside it.
+    fams = edition_map(con)
+    doc_of = {r["filename"]: r["doc_id"]
+              for r in con.execute("SELECT doc_id, filename FROM documents")}
+    present_docs = {doc_of.get(h["file"]) for h in out}
+
+    wanted: list[str] = []
+    for h in out:
+        did = doc_of.get(h["file"])
+        sibs = [e for e in fams.get(_family_of(con, did), []) if e["doc_id"] != did]
+        newer = [e for e in sibs if e["year"] > (h["year"] or 0)]
+        if newer:
+            h["newer_edition"] = {"edition": newer[0]["edition"],
+                                  "year": newer[0]["year"]}
+        for e in sibs:
+            if e["doc_id"] not in present_docs and e["doc_id"] not in wanted:
+                wanted.append(e["doc_id"])
+
+    if wanted:
+        pool_ids = [c for c, _ in fused]
+        extra_meta = hydrate(con, pool_ids[:POOL * 2])
+        for target in wanted:
+            for cid in pool_ids:
+                m = extra_meta.get(cid)
+                if not m or doc_of.get(m["filename"]) != target:
+                    continue
+                out.append({
+                    "score": 0.0, "found_by": "edition-coverage",
+                    "publisher": m["publisher"], "document": m["title"],
+                    "file": m["filename"], "edition": m["edition"],
+                    "year": m["year"], "section": m["path"],
+                    "pages": (f"p{m['page_start']}" if m["page_start"] == m["page_end"]
+                              else f"pp{m['page_start']}-{m['page_end']}"),
+                    "scope": m["scope_tag"], "category": m["category_tag"],
+                    "chunk_id": cid, "text": m["text"],
+                    "note": "surfaced because this edition of the same chapter "
+                            "was otherwise not represented",
+                })
+                break
     return out
+
+
+def _family_of(con, doc_id: str | None) -> str | None:
+    if not doc_id:
+        return None
+    r = con.execute("SELECT family FROM documents WHERE doc_id=?", (doc_id,)).fetchone()
+    return r["family"] if r else None
 
 
 def main() -> int:
@@ -158,6 +252,11 @@ def main() -> int:
     for i, h in enumerate(hits, 1):
         print(f"[{i}] {h['publisher']} — {h['document']}")
         print(f"    {h['edition']} ({h['year']}) · {h['pages']} · {h['found_by']} · score {h['score']}")
+        if h.get("newer_edition"):
+            ne = h["newer_edition"]
+            print(f"    ! a newer edition exists: {ne['edition']} ({ne['year']})")
+        if h.get("note"):
+            print(f"    + {h['note']}")
         if h["section"]:
             print(f"    § {h['section'][:96]}")
         body = " ".join(h["text"].split())[:a.chars]
