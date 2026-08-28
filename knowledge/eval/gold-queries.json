@@ -1,0 +1,93 @@
+{
+  "about": "Gold set for M1 retrieval. The ten methods our decision tables cannot currently evidence (see docs/METHODOLOGY-RULES.md), plus two controls. Each names the document that must be retrieved; we already know the right answer, so retrieval either finds it or it does not.",
+  "thresholds": {
+    "doc_in_top": 5,
+    "doc_recall_min": 0.9,
+    "note": "Correct document in the top 5 for >=9 of 10 gold queries. Controls must also pass."
+  },
+  "queries": [
+    {
+      "id": "G1",
+      "query": "spend-based method for purchased goods and services using economic value",
+      "expect_doc": ["scope3-calculation-guidance-0"],
+      "expect_category": "Category 1",
+      "unlocks": "SPEND_BASED"
+    },
+    {
+      "id": "G2",
+      "query": "environmentally-extended input-output EEIO secondary data screening emissions",
+      "expect_doc": ["scope3-calculation-guidance-0"],
+      "unlocks": "EEIO"
+    },
+    {
+      "id": "G3",
+      "query": "market-based method contractual instruments energy attribute certificates dual reporting",
+      "expect_doc": ["ghg-protocol-scope-2-guidance"],
+      "unlocks": "MKT_BASED"
+    },
+    {
+      "id": "G4",
+      "query": "distance-based method tonne-kilometre mass of goods transported upstream transportation",
+      "expect_doc": ["scope3-calculation-guidance-0"],
+      "expect_category": "Category 4",
+      "unlocks": "WT_DIST"
+    },
+    {
+      "id": "G5",
+      "query": "hotel nights business travel accommodation average data method",
+      "expect_doc": ["scope3-calculation-guidance-0"],
+      "expect_category": "Category 6",
+      "unlocks": "NIGHT_BASED"
+    },
+    {
+      "id": "G6",
+      "query": "use of sold products lifetime electricity consumption direct use phase emissions",
+      "expect_doc": ["scope3-calculation-guidance-0"],
+      "expect_category": "Category 11",
+      "unlocks": "USE_DIRECT"
+    },
+    {
+      "id": "G7",
+      "query": "fuel consumed by sold products during use lifetime fuel combustion",
+      "expect_doc": ["scope3-calculation-guidance-0"],
+      "expect_category": "Category 11",
+      "unlocks": "USE_FUEL"
+    },
+    {
+      "id": "G8",
+      "query": "processing of sold products intermediate products site-specific method",
+      "expect_doc": ["scope3-calculation-guidance-0"],
+      "expect_category": "Category 10",
+      "unlocks": "SITE_PROC"
+    },
+    {
+      "id": "G9",
+      "query": "investment-specific method investee scope 1 and scope 2 emissions allocated by share of equity",
+      "expect_doc": ["scope3-calculation-guidance-0"],
+      "expect_category": "Category 15",
+      "unlocks": "INVEST_SPEC"
+    },
+    {
+      "id": "G10",
+      "query": "average-data method for investments revenue based economic allocation",
+      "expect_doc": ["scope3-calculation-guidance-0"],
+      "expect_category": "Category 15",
+      "unlocks": "ECON_ALLOC"
+    },
+    {
+      "id": "C1",
+      "query": "choice of method decision tree tier 1 tier 2 tier 3 key category",
+      "expect_doc": ["v1-4-ch4-methodchoice", "19r-v1-ch04-methodchoice"],
+      "control": true,
+      "checks": "Must return IPCC, not GHG Protocol. Guards against assuming every methodology question is answered by the GHG Protocol."
+    },
+    {
+      "id": "C2",
+      "query": "activity data emission factor hours of equipment operation floor area occupied",
+      "expect_doc": ["scope3-calculation-guidance-0", "v1-4-ch4-methodchoice", "19r-v1-ch02-datacollection",
+                     "v2-4-ch4-fugitive-emissions", "2026-ghg-conversion-factors-methodology-report"],
+      "control": true,
+      "checks": "Confirms the operating-hours activity-data family surfaces somewhere, per the earlier PAS Table 8.6 finding."
+    }
+  ]
+}

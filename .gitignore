@@ -14,3 +14,10 @@ Desktop.ini
 # logs / scratch
 *.log
 tmp/
+
+# M1 knowledge base — corpus and derived artefacts stay out of git
+knowledge/corpus/
+knowledge/store/
+__pycache__/
+*.pyc
+.venv/

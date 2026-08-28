@@ -1,0 +1,6 @@
+# M1 document intelligence pipeline (Python 3.10+)
+PyMuPDF>=1.24        # PDF text + font metrics
+sentence-transformers>=3.0
+faiss-cpu>=1.8
+numpy>=1.26
+# No LLM SDK: M1 makes no model calls. That decision belongs to M2.
