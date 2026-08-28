@@ -1,0 +1,240 @@
+{
+  "about": "Ground-truth activity records and the method each should produce. These are the measuring stick for the whole pipeline: today they test hand-authored tables, and when M2/M3 derive tables from the documents, the SAME cases decide whether the derived rules behave like the authored ones.",
+
+  "circularity_warning": "A case is only a real test if its expectation was decided independently of assets/decision-tables.js. Every case therefore carries a `basis`. basis=\"cited\" means the expectation comes from a passage in the corpus, and the citation is recorded. basis=\"judgement\" means it comes from domain reasoning and is weaker evidence. A case whose expectation was read off our own table would prove nothing and does not belong here.",
+
+  "tests_key": {
+    "selection": "the right method is chosen when one clearly applies",
+    "ordering": "the right method wins when SEVERAL could apply - this is what breaks if a derived table gets priority wrong",
+    "refusal": "the engine declines rather than guessing",
+    "validation": "a malformed record is stopped before rule matching"
+  },
+
+  "cases": [
+    {
+      "id": "DT-fuel", "tests": ["selection"], "basis": "cited",
+      "name": "Downstream freight, carrier fuel receipt only",
+      "record": {"activityCategory": "downstreamTransport", "activityType": "Outbound Freight",
+                 "reportingYear": "2026", "country": "India", "region": "Tamil Nadu",
+                 "fuelQuantity": "1000", "fuelUnit": "litre", "fuelType": "Jet Kerosene (Jet A-1)"},
+      "expect": "Fuel-based",
+      "why": "Fuel consumed is measured activity data. The Corporate Standard p.44 puts metered fuel purchase ahead of proxies.",
+      "cite": "GHG Protocol Corporate Standard (2004) p.44"
+    },
+    {
+      "id": "DT-order-fuel-beats-vehicle", "tests": ["ordering"], "basis": "cited",
+      "name": "Downstream freight with BOTH fuel and vehicle distance",
+      "record": {"activityCategory": "downstreamTransport", "activityType": "Outbound Freight",
+                 "reportingYear": "2026", "country": "India",
+                 "fuelQuantity": "1000", "fuelUnit": "litre", "fuelType": "Diesel",
+                 "distance": "640", "distanceUnit": "km", "mode": "Road — HGV (>7.5t)"},
+      "expect": "Fuel-based",
+      "why": "Both qualify. Measured fuel outranks a vehicle-km average because it is primary data for the actual movement.",
+      "cite": "GHG Protocol Corporate Standard (2004) p.44"
+    },
+    {
+      "id": "UT-weight-distance-wins", "tests": ["ordering"], "basis": "cited",
+      "name": "Inbound freight with weight, distance AND spend",
+      "record": {"activityCategory": "upstreamTransport", "activityType": "Inbound Freight",
+                 "reportingYear": "2026", "country": "India",
+                 "freightMass": "12", "massUnit": "tonne", "distance": "640",
+                 "distanceUnit": "km", "mode": "Road — HGV (>7.5t)",
+                 "spend": "84000", "currency": "INR"},
+      "expect": "Weight-distance",
+      "why": "Tonne-kilometre is the reference method for freight; spend is a screening proxy and must not win when mass and distance exist.",
+      "cite": "GHG Protocol Scope 3 Technical Guidance (2013), Category 4"
+    },
+    {
+      "id": "PG-supplier-beats-spend", "tests": ["ordering"], "basis": "cited",
+      "name": "Purchased goods with a supplier footprint AND an invoice value",
+      "record": {"activityCategory": "purchasedGoods", "activityType": "Raw Materials",
+                 "reportingYear": "2026", "country": "India",
+                 "supplierData": "Verified supplier product footprint (PCF)",
+                 "materialMass": "24", "massUnit": "tonne", "materialType": "Steel — primary",
+                 "spend": "1850000", "currency": "INR", "sectorCode": "Basic metals"},
+      "expect": "Supplier-specific",
+      "why": "The guidance ranks supplier-specific first and spend-based last, applying spend only when the others are not feasible.",
+      "cite": "GHG Protocol Scope 3 Technical Guidance (2013) p.33, Category 1"
+    },
+    {
+      "id": "PG-spend-fallback", "tests": ["selection"], "basis": "cited",
+      "name": "Purchased goods, nothing but an invoice",
+      "record": {"activityCategory": "purchasedGoods", "activityType": "Professional Services",
+                 "reportingYear": "2026", "country": "India",
+                 "spend": "450000", "currency": "INR", "sectorCode": "Professional services"},
+      "expect": "Spend-based (EEIO)",
+      "why": "With no supplier data and no mass, the guidance directs the spend-based method against EEIO factors.",
+      "cite": "GHG Protocol Scope 3 Technical Guidance (2013) p.33, Category 1"
+    },
+    {
+      "id": "BT-distance", "tests": ["selection"], "basis": "cited",
+      "name": "Air travel with itinerary distance",
+      "record": {"activityCategory": "businessTravel", "activityType": "Air Travel",
+                 "reportingYear": "2026", "country": "India",
+                 "distance": "1200", "distanceUnit": "passenger.km",
+                 "mode": "Air — Short Haul (<1,600 km)"},
+      "expect": "Distance-based",
+      "why": "Scope 3 is calculated from activity data such as passenger miles.",
+      "cite": "GHG Protocol Corporate Standard (2004) p.44"
+    },
+    {
+      "id": "BT-order-distance-beats-spend", "tests": ["ordering"], "basis": "cited",
+      "name": "Business travel with BOTH itinerary distance and expense claim",
+      "record": {"activityCategory": "businessTravel", "activityType": "Air Travel",
+                 "reportingYear": "2026", "country": "India",
+                 "distance": "1200", "distanceUnit": "passenger.km",
+                 "mode": "Air — Short Haul (<1,600 km)",
+                 "spend": "25000", "currency": "INR"},
+      "expect": "Distance-based",
+      "why": "Monetary proxies rank below measured activity data.",
+      "cite": "GHG Protocol Corporate Standard (2004) p.44"
+    },
+    {
+      "id": "SC-fuel", "tests": ["selection"], "basis": "cited",
+      "name": "Site boiler, metered natural gas",
+      "record": {"activityCategory": "stationaryCombustion", "activityType": "Boiler / Furnace",
+                 "reportingYear": "2026", "country": "India",
+                 "fuelQuantity": "18000", "fuelUnit": "m³", "fuelType": "Natural Gas"},
+      "expect": "Fuel-based",
+      "why": "Scope 1 is calculated from purchased quantities of commercial fuels using published factors.",
+      "cite": "GHG Protocol Corporate Standard (2004) p.44"
+    },
+    {
+      "id": "MC-fuel-beats-distance", "tests": ["ordering"], "basis": "cited",
+      "name": "Owned fleet with BOTH fuel card and odometer",
+      "record": {"activityCategory": "mobileCombustion", "activityType": "Company Car",
+                 "reportingYear": "2026", "country": "India",
+                 "fuelQuantity": "64", "fuelUnit": "litre", "fuelType": "Diesel",
+                 "distance": "820", "distanceUnit": "km", "mode": "Road — Car (Diesel)"},
+      "expect": "Fuel-based",
+      "why": "For owned assets the fuel record is the direct measurement; odometer distance is a derived estimate.",
+      "cite": "GHG Protocol Corporate Standard (2004) p.44"
+    },
+    {
+      "id": "PE-location", "tests": ["selection"], "basis": "cited",
+      "name": "Metered grid electricity, no certificates",
+      "record": {"activityCategory": "purchasedElectricity", "activityType": "Grid Import — Plant",
+                 "reportingYear": "2026", "country": "India",
+                 "energyConsumption": "5000", "energyUnit": "kWh",
+                 "gridRegion": "Southern Region (SR)"},
+      "expect": "Location-based",
+      "why": "Scope 2 from metered consumption against the local grid factor.",
+      "cite": "GHG Protocol Corporate Standard (2004) p.44"
+    },
+    {
+      "id": "PE-market", "tests": ["selection"], "basis": "cited",
+      "name": "Electricity backed by I-REC, no grid region recorded",
+      "record": {"activityCategory": "purchasedElectricity", "activityType": "Grid Import — Office",
+                 "reportingYear": "2026", "country": "India",
+                 "energyConsumption": "5000", "energyUnit": "kWh",
+                 "contractualInstrument": "I-REC (India)"},
+      "expect": "Market-based",
+      "why": "A contractual instrument is evidenced, so the market-based method applies.",
+      "cite": "GHG Protocol Scope 2 Guidance (2015)"
+    },
+    {
+      "id": "PE-dual-KNOWN-LIMITATION", "tests": ["ordering"], "basis": "cited",
+      "name": "Electricity with BOTH grid region and I-REC",
+      "record": {"activityCategory": "purchasedElectricity", "activityType": "Grid Import — Plant",
+                 "reportingYear": "2026", "country": "India",
+                 "energyConsumption": "5000", "energyUnit": "kWh",
+                 "gridRegion": "Southern Region (SR)",
+                 "contractualInstrument": "I-REC (India)"},
+      "expect": "Location-based",
+      "expect_is_wrong": true,
+      "why": "RECORDED AS A KNOWN DEFECT, NOT AS CORRECT BEHAVIOUR. Scope 2 Guidance section 7.4 requires dual reporting - BOTH figures. A first-match engine can only return one. The expectation records what the engine does today so the gap stays visible and measurable; it must change when the engine learns multi_applicable.",
+      "cite": "GHG Protocol Scope 2 Guidance (2015) section 7.4 Dual reporting"
+    },
+    {
+      "id": "WS-waste-type", "tests": ["selection"], "basis": "judgement",
+      "name": "Waste with weighbridge ticket naming stream and route",
+      "record": {"activityCategory": "wasteOperations", "activityType": "General Waste",
+                 "reportingYear": "2026", "country": "India",
+                 "wasteQuantity": "18", "wasteUnit": "tonne",
+                 "wasteType": "Mixed municipal waste", "treatmentMethod": "Landfill"},
+      "expect": "Waste-type-specific",
+      "why": "Stream and treatment route are both known, which is the most specific waste basis available."
+    },
+    {
+      "id": "FG-material-balance", "tests": ["ordering"], "basis": "cited",
+      "name": "Refrigerant with BOTH a recharge log and nameplate charge",
+      "record": {"activityCategory": "fugitiveRefrigerants", "activityType": "Building HVAC",
+                 "reportingYear": "2026", "country": "India",
+                 "refrigerantType": "R-410A", "refrigerantRecharge": "42",
+                 "equipmentCharge": "310", "leakRate": "8",
+                 "equipmentType": "Chiller — centrifugal"},
+      "expect": "Material-balance",
+      "why": "Gas actually added is observed; a leak-rate screen is an assumption. Mass balance outranks screening.",
+      "cite": "GHG Protocol Corporate Standard (2004) p.44"
+    },
+    {
+      "id": "EC-commute-distance", "tests": ["selection"], "basis": "judgement",
+      "name": "Employee commuting from a survey",
+      "record": {"activityCategory": "employeeCommuting", "activityType": "Commute Survey",
+                 "reportingYear": "2026", "country": "India",
+                 "distance": "18", "distanceUnit": "km", "mode": "Road — Bus / Coach",
+                 "workingDays": "220", "employeeCount": "140"},
+      "expect": "Distance-based",
+      "why": "Surveyed distance by mode is more specific than a national per-employee average."
+    },
+    {
+      "id": "IN-investee-reports", "tests": ["ordering"], "basis": "judgement",
+      "name": "Investment where the investee reports AND value is known",
+      "record": {"activityCategory": "investments", "activityType": "Equity Investment",
+                 "reportingYear": "2026", "country": "India",
+                 "investeeEmissions": "48200", "ownershipShare": "18.5",
+                 "investmentValue": "450000000", "currency": "INR",
+                 "investeeRevenue": "2400000000", "sectorCode": "Basic metals"},
+      "expect": "Investment-specific",
+      "why": "Reported investee emissions allocated by share is primary data; economic allocation is a proxy."
+    },
+    {
+      "id": "REFUSE-no-measures", "tests": ["refusal"], "basis": "cited",
+      "name": "Business travel record with context only",
+      "record": {"activityCategory": "businessTravel", "activityType": "Air Travel",
+                 "reportingYear": "2026", "country": "India", "region": "Tamil Nadu"},
+      "expect": "Insufficient Data",
+      "why": "Nothing measurable was supplied. The standard requires the most accurate approach AVAILABLE; it never authorises a default when none applies.",
+      "cite": "GHG Protocol Corporate Standard (2004) p.44"
+    },
+    {
+      "id": "REFUSE-zero-is-absent", "tests": ["refusal"], "basis": "judgement",
+      "name": "Fuel quantity entered as zero",
+      "record": {"activityCategory": "stationaryCombustion", "activityType": "Diesel Generator",
+                 "reportingYear": "2026", "country": "India",
+                 "fuelQuantity": "0", "fuelUnit": "litre", "fuelType": "Diesel"},
+      "expect": "Insufficient Data",
+      "why": "A zero quantity is not an activity. Treating it as present would produce a spurious zero-emission result rather than a data gap."
+    },
+    {
+      "id": "VALIDATE-missing-unit", "tests": ["validation"], "basis": "judgement",
+      "name": "Distance given with no unit",
+      "record": {"activityCategory": "businessTravel", "activityType": "Air Travel",
+                 "reportingYear": "2026", "country": "India",
+                 "distance": "1200", "distanceUnit": "",
+                 "mode": "Air — Short Haul (<1,600 km)"},
+      "expect": "__validation_failure__",
+      "why": "A bare number is uninterpretable. Guessing the unit is exactly the silent default the design forbids."
+    },
+    {
+      "id": "VALIDATE-negative", "tests": ["validation"], "basis": "judgement",
+      "name": "Negative energy consumption",
+      "record": {"activityCategory": "purchasedElectricity", "activityType": "Grid Import — Office",
+                 "reportingYear": "2026", "country": "India",
+                 "energyConsumption": "-500", "energyUnit": "kWh",
+                 "gridRegion": "Southern Region (SR)"},
+      "expect": "__validation_failure__",
+      "why": "Activity data cannot be below zero."
+    },
+    {
+      "id": "VALIDATE-year-window", "tests": ["validation"], "basis": "judgement",
+      "name": "Reporting year outside the open window",
+      "record": {"activityCategory": "purchasedElectricity", "activityType": "Grid Import — Office",
+                 "reportingYear": "2019", "country": "India",
+                 "energyConsumption": "5000", "energyUnit": "kWh",
+                 "gridRegion": "Southern Region (SR)"},
+      "expect": "__validation_failure__",
+      "why": "A closed inventory year should be rejected rather than silently recalculated."
+    }
+  ]
+}
