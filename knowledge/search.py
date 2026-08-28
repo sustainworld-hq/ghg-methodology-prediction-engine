@@ -107,7 +107,8 @@ def hydrate(con, chunk_ids: list[str]) -> dict:
     rows = con.execute(
         f"SELECT c.chunk_id, c.text, c.page_start, c.page_end, c.scope_tag, "
         f"c.category_tag, s.path, s.heading, "
-        f"d.filename, d.title, d.publisher, d.edition, d.year, d.family "
+        f"d.filename, d.title, d.publisher, d.edition, d.year, d.family, "
+        f"d.provisional "
         f"FROM chunks c "
         f"LEFT JOIN sections s ON s.section_id = c.section_id "
         f"JOIN documents d ON d.doc_id = c.doc_id "
@@ -164,6 +165,7 @@ def search(query: str, k: int = 8, publisher: str | None = None,
                       else f"pp{m['page_start']}-{m['page_end']}"),
             "scope": m["scope_tag"],
             "category": m["category_tag"],
+            "provisional": bool(m["provisional"]),
             "chunk_id": cid,
             "text": m["text"],
         })
@@ -216,6 +218,7 @@ def search(query: str, k: int = 8, publisher: str | None = None,
                     "pages": (f"p{m['page_start']}" if m["page_start"] == m["page_end"]
                               else f"pp{m['page_start']}-{m['page_end']}"),
                     "scope": m["scope_tag"], "category": m["category_tag"],
+                    "provisional": bool(m["provisional"]),
                     "chunk_id": cid, "text": m["text"],
                     "note": "surfaced because this edition of the same chapter "
                             "was otherwise not represented",
@@ -252,6 +255,8 @@ def main() -> int:
     for i, h in enumerate(hits, 1):
         print(f"[{i}] {h['publisher']} — {h['document']}")
         print(f"    {h['edition']} ({h['year']}) · {h['pages']} · {h['found_by']} · score {h['score']}")
+        if h.get("provisional"):
+            print("    !! DRAFT - not the published standard; never cite as final")
         if h.get("newer_edition"):
             ne = h["newer_edition"]
             print(f"    ! a newer edition exists: {ne['edition']} ({ne['year']})")

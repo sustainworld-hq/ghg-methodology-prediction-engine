@@ -13,7 +13,7 @@ import sys
 
 import fitz
 
-from common import CORPUS, REGISTRY, connect, doc_id_for
+from common import CORPUS, PROVISIONAL, REGISTRY, connect, doc_id_for
 
 
 def sha256(path) -> str:
@@ -57,13 +57,14 @@ def main() -> int:
             seen_hash[digest] = doc_id
 
         rows.append((doc_id, name, digest, publisher, title, edition, year,
-                     family, page_count, char_count, status, dup_of))
+                     family, page_count, char_count, status, dup_of,
+                     1 if name in PROVISIONAL else 0))
 
     con.execute("DELETE FROM documents")
     con.executemany(
         "INSERT INTO documents (doc_id, filename, sha256, publisher, title, "
-        "edition, year, family, page_count, char_count, status, duplicate_of) "
-        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", rows)
+        "edition, year, family, page_count, char_count, status, duplicate_of, "
+        "provisional) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", rows)
     con.commit()
 
     active = [r for r in rows if r[10] == "active"]
@@ -85,6 +86,12 @@ def main() -> int:
         print()
         for d in dupes:
             print(f"  DUPLICATE  {d[1]}  ->  same bytes as {d[11]}")
+    prov = [r for r in rows if r[12]]
+    if prov:
+        print()
+        print("  PROVISIONAL (draft - never cite as the final standard):")
+        for d in prov:
+            print(f"      {d[1]}  [{d[5]}, {d[6]}]")
     if unregistered:
         print()
         print("  NOT REGISTERED (skipped - add to REGISTRY in common.py):")
