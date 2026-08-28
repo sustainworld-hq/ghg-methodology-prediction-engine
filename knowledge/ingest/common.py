@@ -36,12 +36,12 @@ REGISTRY = {
     "Scope3_Calculation_Guidance_0.pdf": (
         "GHG Protocol", "Technical Guidance for Calculating Scope 3 Emissions",
         "Version 1.0", 2013, "ghgp-scope3-guidance"),
-    # VERIFIED DRAFT: all 87 pages carry "DRAFT FOR PUBLIC COMMENT", dated
-    # March 2014. The final Scope 2 Guidance was published January 2015. This
-    # file is NOT the published standard and must never be cited as one.
-    "GHG Protocol Scope 2 Guidance.pdf": (
+    # The published Scope 2 Guidance, 120pp, downloaded from ghgprotocol.org.
+    # Verified free of the "DRAFT FOR PUBLIC COMMENT" watermark that marked the
+    # March 2014 consultation draft this replaced.
+    "GHG-Protocol-Scope-2-Guidance-Final-2015.pdf": (
         "GHG Protocol", "Scope 2 Guidance",
-        "Draft for Public Comment", 2014, "ghgp-scope2"),
+        "Amendment to the Corporate Standard", 2015, "ghgp-scope2"),
     "Simplified_Guide_GHG_Management_Organizations.pdf": (
         "GHG Protocol", "Simplified Guide to GHG Management for Organizations",
         "First Edition", 2015, "ghgp-simplified"),
@@ -98,7 +98,7 @@ REGISTRY = {
 # Documents that are drafts or consultations. Anything extracted from these
 # carries provisional status through to governance and can never be published
 # as a citation to the final standard.
-PROVISIONAL = {"GHG Protocol Scope 2 Guidance.pdf"}
+PROVISIONAL: set[str] = set()
 
 HEADING_PROFILES = {
     "GHG Protocol": {"size_ratio": 1.12, "max_words": 14, "allow_allcaps": True},

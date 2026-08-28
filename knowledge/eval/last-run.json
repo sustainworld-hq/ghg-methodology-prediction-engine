@@ -42,9 +42,9 @@
         "cat_ok": null,
         "query": "market-based method contractual instruments energy attribute certificates dual reporting",
         "top_docs": [
-          "ghg-protocol-scope-2-guidance",
-          "ghg-protocol-scope-2-guidance",
-          "ghg-protocol-scope-2-guidance"
+          "ghg-protocol-scope-2-guidance-final-2015",
+          "ghg-protocol-scope-2-guidance-final-2015",
+          "ghg-protocol-scope-2-guidance-final-2015"
         ]
       },
       {
@@ -134,8 +134,8 @@
         "query": "average-data method for investments revenue based economic allocation",
         "top_docs": [
           "scope3-calculation-guidance-0",
-          "corporate-value-chain-accounting-reporing-standard-041613-2",
-          "scope3-calculation-guidance-0"
+          "scope3-calculation-guidance-0",
+          "corporate-value-chain-accounting-reporing-standard-041613-2"
         ]
       },
       {
@@ -161,7 +161,341 @@
         "top_docs": [
           "corporate-value-chain-accounting-reporing-standard-041613-2",
           "scope3-calculation-guidance-0",
-          "ghg-protocol-scope-2-guidance"
+          "scope3-calculation-guidance-0"
+        ]
+      }
+    ]
+  },
+  {
+    "mode": "lexical",
+    "recall": 1.0,
+    "mrr": 0.883,
+    "rank1": 8,
+    "gold_n": 10,
+    "gold_hits": 10,
+    "controls_ok": true,
+    "results": [
+      {
+        "id": "G1",
+        "rank": 1,
+        "ok": true,
+        "control": false,
+        "cat_ok": true,
+        "query": "spend-based method for purchased goods and services using economic value",
+        "top_docs": [
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0"
+        ]
+      },
+      {
+        "id": "G2",
+        "rank": 1,
+        "ok": true,
+        "control": false,
+        "cat_ok": null,
+        "query": "environmentally-extended input-output EEIO secondary data screening emissions",
+        "top_docs": [
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0"
+        ]
+      },
+      {
+        "id": "G3",
+        "rank": 1,
+        "ok": true,
+        "control": false,
+        "cat_ok": null,
+        "query": "market-based method contractual instruments energy attribute certificates dual reporting",
+        "top_docs": [
+          "ghg-protocol-scope-2-guidance-final-2015",
+          "ghg-protocol-scope-2-guidance-final-2015",
+          "ghg-protocol-scope-2-guidance-final-2015"
+        ]
+      },
+      {
+        "id": "G4",
+        "rank": 1,
+        "ok": true,
+        "control": false,
+        "cat_ok": true,
+        "query": "distance-based method tonne-kilometre mass of goods transported upstream transportation",
+        "top_docs": [
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0"
+        ]
+      },
+      {
+        "id": "G5",
+        "rank": 1,
+        "ok": true,
+        "control": false,
+        "cat_ok": true,
+        "query": "hotel nights business travel accommodation average data method",
+        "top_docs": [
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0"
+        ]
+      },
+      {
+        "id": "G6",
+        "rank": 2,
+        "ok": true,
+        "control": false,
+        "cat_ok": true,
+        "query": "use of sold products lifetime electricity consumption direct use phase emissions",
+        "top_docs": [
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0"
+        ]
+      },
+      {
+        "id": "G7",
+        "rank": 3,
+        "ok": true,
+        "control": false,
+        "cat_ok": true,
+        "query": "fuel consumed by sold products during use lifetime fuel combustion",
+        "top_docs": [
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0"
+        ]
+      },
+      {
+        "id": "G8",
+        "rank": 1,
+        "ok": true,
+        "control": false,
+        "cat_ok": true,
+        "query": "processing of sold products intermediate products site-specific method",
+        "top_docs": [
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0"
+        ]
+      },
+      {
+        "id": "G9",
+        "rank": 1,
+        "ok": true,
+        "control": false,
+        "cat_ok": true,
+        "query": "investment-specific method investee scope 1 and scope 2 emissions allocated by share of equity",
+        "top_docs": [
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0"
+        ]
+      },
+      {
+        "id": "G10",
+        "rank": 1,
+        "ok": true,
+        "control": false,
+        "cat_ok": true,
+        "query": "average-data method for investments revenue based economic allocation",
+        "top_docs": [
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0"
+        ]
+      },
+      {
+        "id": "C1",
+        "rank": 2,
+        "ok": true,
+        "control": true,
+        "cat_ok": null,
+        "query": "choice of method decision tree tier 1 tier 2 tier 3 key category",
+        "top_docs": [
+          "v2-3-ch3-mobile-combustion",
+          "19r-v1-ch04-methodchoice",
+          "v2-4-ch4-fugitive-emissions"
+        ]
+      },
+      {
+        "id": "C2",
+        "rank": 1,
+        "ok": true,
+        "control": true,
+        "cat_ok": null,
+        "query": "activity data emission factor hours of equipment operation floor area occupied",
+        "top_docs": [
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0",
+          "corporate-value-chain-accounting-reporing-standard-041613-2"
+        ]
+      }
+    ]
+  },
+  {
+    "mode": "dense",
+    "recall": 1.0,
+    "mrr": 0.95,
+    "rank1": 9,
+    "gold_n": 10,
+    "gold_hits": 10,
+    "controls_ok": true,
+    "results": [
+      {
+        "id": "G1",
+        "rank": 1,
+        "ok": true,
+        "control": false,
+        "cat_ok": true,
+        "query": "spend-based method for purchased goods and services using economic value",
+        "top_docs": [
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0"
+        ]
+      },
+      {
+        "id": "G2",
+        "rank": 1,
+        "ok": true,
+        "control": false,
+        "cat_ok": null,
+        "query": "environmentally-extended input-output EEIO secondary data screening emissions",
+        "top_docs": [
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0"
+        ]
+      },
+      {
+        "id": "G3",
+        "rank": 1,
+        "ok": true,
+        "control": false,
+        "cat_ok": null,
+        "query": "market-based method contractual instruments energy attribute certificates dual reporting",
+        "top_docs": [
+          "ghg-protocol-scope-2-guidance-final-2015",
+          "ghg-protocol-scope-2-guidance-final-2015",
+          "ghg-protocol-scope-2-guidance-final-2015"
+        ]
+      },
+      {
+        "id": "G4",
+        "rank": 1,
+        "ok": true,
+        "control": false,
+        "cat_ok": true,
+        "query": "distance-based method tonne-kilometre mass of goods transported upstream transportation",
+        "top_docs": [
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0"
+        ]
+      },
+      {
+        "id": "G5",
+        "rank": 2,
+        "ok": true,
+        "control": false,
+        "cat_ok": true,
+        "query": "hotel nights business travel accommodation average data method",
+        "top_docs": [
+          "2026-ghg-conversion-factors-methodology-report",
+          "scope3-calculation-guidance-0",
+          "2026-ghg-conversion-factors-methodology-report"
+        ]
+      },
+      {
+        "id": "G6",
+        "rank": 1,
+        "ok": true,
+        "control": false,
+        "cat_ok": true,
+        "query": "use of sold products lifetime electricity consumption direct use phase emissions",
+        "top_docs": [
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0"
+        ]
+      },
+      {
+        "id": "G7",
+        "rank": 1,
+        "ok": true,
+        "control": false,
+        "cat_ok": true,
+        "query": "fuel consumed by sold products during use lifetime fuel combustion",
+        "top_docs": [
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0"
+        ]
+      },
+      {
+        "id": "G8",
+        "rank": 1,
+        "ok": true,
+        "control": false,
+        "cat_ok": true,
+        "query": "processing of sold products intermediate products site-specific method",
+        "top_docs": [
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0",
+          "corporate-value-chain-accounting-reporing-standard-041613-2"
+        ]
+      },
+      {
+        "id": "G9",
+        "rank": 1,
+        "ok": true,
+        "control": false,
+        "cat_ok": true,
+        "query": "investment-specific method investee scope 1 and scope 2 emissions allocated by share of equity",
+        "top_docs": [
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0",
+          "scope3-calculation-guidance-0"
+        ]
+      },
+      {
+        "id": "G10",
+        "rank": 1,
+        "ok": true,
+        "control": false,
+        "cat_ok": true,
+        "query": "average-data method for investments revenue based economic allocation",
+        "top_docs": [
+          "scope3-calculation-guidance-0",
+          "corporate-value-chain-accounting-reporing-standard-041613-2",
+          "corporate-value-chain-accounting-reporing-standard-041613-2"
+        ]
+      },
+      {
+        "id": "C1",
+        "rank": 1,
+        "ok": true,
+        "control": true,
+        "cat_ok": null,
+        "query": "choice of method decision tree tier 1 tier 2 tier 3 key category",
+        "top_docs": [
+          "v1-4-ch4-methodchoice",
+          "19r-v1-ch04-methodchoice",
+          "v2-3-ch3-mobile-combustion"
+        ]
+      },
+      {
+        "id": "C2",
+        "rank": 3,
+        "ok": true,
+        "control": true,
+        "cat_ok": null,
+        "query": "activity data emission factor hours of equipment operation floor area occupied",
+        "top_docs": [
+          "v1-6-ch6-qa-qc",
+          "ghg-protocol-revised",
+          "scope3-calculation-guidance-0"
         ]
       }
     ]

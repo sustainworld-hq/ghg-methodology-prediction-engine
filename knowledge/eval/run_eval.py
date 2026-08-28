@@ -51,6 +51,8 @@ def evaluate(mode: str, k: int, verbose: bool = False) -> dict:
                  for r in con.execute("SELECT chunk_id, doc_id FROM chunks")}
     chunk_cat = {r["chunk_id"]: r["category_tag"]
                  for r in con.execute("SELECT chunk_id, category_tag FROM chunks")}
+    doc_family = {r["doc_id"]: r["family"]
+                  for r in con.execute("SELECT doc_id, family FROM documents")}
 
     gold = [q for q in GOLD["queries"] if not q.get("control")]
     ctrl = [q for q in GOLD["queries"] if q.get("control")]
@@ -59,7 +61,11 @@ def evaluate(mode: str, k: int, verbose: bool = False) -> dict:
     for q in GOLD["queries"]:
         ranked = run_mode(q["query"], mode, k)
         docs = [chunk_doc.get(c, "?") for c in ranked]
-        want = set(q["expect_doc"])
+        # Matching on family rather than doc_id survives a file being renamed
+        # or an edition being swapped - which is exactly what happened when the
+        # draft Scope 2 Guidance was replaced by the published one.
+        want = set(q.get("expect_doc", []))
+        want_fam = set(q.get("expect_family", []))
         want_cat = q.get("expect_category")
         # Strict rank: first hit that is the right document AND, where the
         # query names one, the right scope 3 category. Document-level alone is
@@ -67,7 +73,8 @@ def evaluate(mode: str, k: int, verbose: bool = False) -> dict:
         # retriever scores 10/10 and the metric discriminates nothing.
         rank = None
         for i, (c, d) in enumerate(zip(ranked, docs), 1):
-            if d in want and (want_cat is None or chunk_cat.get(c) == want_cat):
+            hit_doc = d in want or (want_fam and doc_family.get(d) in want_fam)
+            if hit_doc and (want_cat is None or chunk_cat.get(c) == want_cat):
                 rank = i
                 break
         cat_ok = None if want_cat is None else rank is not None
