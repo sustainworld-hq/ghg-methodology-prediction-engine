@@ -21,3 +21,6 @@ knowledge/store/
 __pycache__/
 *.pyc
 .venv/
+
+# local scratch (D: drive only)
+.work/

@@ -386,3 +386,42 @@ table.dt tr.is-dim td { color: var(--ink-3); }
 .src.todo { color: var(--amber); }
 .src-note { font-size: 12.5px; color: var(--ink-3); margin-top: 12px; max-width: 66ch; }
 .src-note code { font-size: 12px; color: var(--ink-2); }
+
+/* ------------------------------------------------------------- evidence --- */
+
+.ev-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.ev-bar input { flex: 1 1 320px; height: 44px; font-size: 15px; }
+.ev-examples { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+.ev-examples > span { font-size: 13px; color: var(--ink-3); }
+.ev-eg {
+  appearance: none; font: inherit; font-size: 12.5px; cursor: pointer;
+  padding: 5px 11px; border-radius: 999px; border: 1px solid var(--line-2);
+  background: var(--paper); color: var(--ink-2);
+}
+.ev-eg:hover { border-color: var(--green); color: var(--green); background: var(--green-wash); }
+
+.ev-results { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+.ev-hit {
+  background: var(--paper); border: 1px solid var(--line);
+  border-left: 3px solid var(--green); border-radius: var(--r); padding: 16px 18px;
+}
+.ev-cite { display: flex; flex-direction: column; gap: 2px; }
+.ev-cite b { font-size: 14.5px; }
+.ev-cite span { font-size: 12.5px; color: var(--ink-3); }
+.ev-warn {
+  margin-top: 8px; font-size: 12.5px; font-weight: 500; color: var(--red);
+  background: var(--red-wash); border: 1px solid var(--red-line);
+  border-radius: 5px; padding: 5px 9px; display: inline-block;
+}
+.ev-warn.amber { color: var(--amber); background: var(--amber-wash); border-color: var(--amber-line); }
+.ev-sec { margin-top: 9px; font-size: 12.5px; color: var(--ink-2); }
+.ev-text { margin-top: 10px; font-size: 14px; line-height: 1.65; color: var(--ink-2); }
+.ev-text mark { background: var(--green-wash); color: var(--ink); padding: 0 2px; border-radius: 2px; }
+
+.ev-pub { margin-bottom: 18px; }
+.ev-pub:last-child { margin-bottom: 0; }
+.ev-pub h3 { font-size: 13px; color: var(--ink-3); font-weight: 500; margin-bottom: 8px; }
+.ev-pub ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.ev-pub li { font-size: 13.5px; display: flex; gap: 10px; flex-wrap: wrap; align-items: baseline; }
+.ev-pub li b { font-weight: 500; }
+.ev-pub li span { font-size: 12.5px; color: var(--ink-3); }

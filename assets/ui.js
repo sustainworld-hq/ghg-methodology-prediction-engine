@@ -603,10 +603,12 @@ function setTab(tab) {
   state.tab = tab;
   $('#findView').hidden = tab !== 'find';
   $('#libraryView').hidden = tab !== 'library';
+  $('#evidenceView').hidden = tab !== 'evidence';
   document.querySelectorAll('.tab').forEach(function (t) {
     t.setAttribute('aria-selected', t.dataset.tab === tab ? 'true' : 'false');
   });
   if (tab === 'library') renderLibrary();
+  if (tab === 'evidence') renderEvidence();
   window.scrollTo({ top: 0, behavior: 'auto' });
 }
 
