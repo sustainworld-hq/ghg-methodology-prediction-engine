@@ -72,7 +72,13 @@ def build_snapshot(con, version: str) -> dict:
         for r in con.execute(
                 "SELECT * FROM methodology_rule WHERE ruleset_version=? "
                 "AND category=? AND status='APPROVED' "
-                "ORDER BY COALESCE(preference_rank, 9999), rule_id",
+                # NULL rank means UNORDERED, not worst. Sorting NULLs to 9999
+                # pushed them below a rule the standard explicitly places LAST,
+                # emitting the known-last fallback first. Unordered rules come
+                # before it; among themselves their order is arbitrary, which
+                # is the ambiguity MULTIPLE_APPLICABLE must surface.
+                "ORDER BY CASE WHEN preference_rank IS NULL THEN 0 ELSE 1 END, "
+                "preference_rank, rule_id",
                 (version, c["category"])):
             rules.append({
                 "rule_id": r["rule_id"],

@@ -1,0 +1,1391 @@
+{
+  "ruleset_version": "2026.09.02",
+  "method": "lexical scan, no model",
+  "patterns": [
+    "if\\s+(?:the\\s+)?[\\w\\s,\\-]{0,90}?method[s]?\\s+(?:is|are)\\s+not\\s+feasible",
+    "if\\s+[\\w\\s,\\-]{0,90}?(?:data|information)\\s+(?:is|are)\\s+not\\s+available",
+    "(?:where|when)\\s+[\\w\\s,\\-]{0,60}?(?:is|are)\\s+(?:not\\s+)?(?:available|feasible)",
+    "in\\s+order\\s+of\\s+preference",
+    "(?:is|are)\\s+(?:the\\s+)?(?:most|more)\\s+accurate",
+    "prefer(?:red|able|ence)\\b",
+    "should\\s+(?:be\\s+)?(?:use|used|apply|applied)\\b",
+    "as\\s+a\\s+last\\s+resort",
+    "only\\s+(?:be\\s+)?(?:use|used)\\s+(?:if|when)",
+    "hierarch",
+    "decision\\s+tree"
+  ],
+  "categories": [
+    {
+      "category": "BUSINESS_TRAVEL",
+      "label": "Business Travel",
+      "scope": "Scope 3",
+      "rules": [
+        {
+          "rule_id": "BUSINESS_TRAVEL__DIST_BASED__001",
+          "methodology": "DIST_BASED",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "BUSINESS_TRAVEL__FUEL_BASED__002",
+          "methodology": "FUEL_BASED",
+          "preference_rank": 2
+        },
+        {
+          "rule_id": "BUSINESS_TRAVEL__SPEND_BASED__003",
+          "methodology": "SPEND_BASED",
+          "preference_rank": 3
+        }
+      ],
+      "strong_evidence": [
+        {
+          "sentence": "Technical Guidance for Calculating Scope 3 Emissions [82] CATEGORY 6 Business Travel Use the spend-based method yes Is data available on the amount of money spent on travel providers? no Use the distance-based method Is data available on distance travelled? Use the fuel-based method no no Is data available on the types and quantities/cost of fuels consumed during travel? yes yes yes Does business travel contribute significantly to scope 3 emissions (based on screening) or is engagement with travel providers otherwise relevant to the business goals? Table [6.1] Accounting for employee transportation across the value chain Activity Relevant category of emissions Emissions from transportation in vehicles owned or controlled by the reporting company Scope 1 (for vehicles that consume fuel) and scope 2 (for vehicles that consume electricity) Emissions from the transportation of employees for ",
+          "signals": [
+            "defers to a decision tree"
+          ],
+          "methods_named": [
+            "distance-based method",
+            "fuel-based method",
+            "spend-based method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00083",
+            "pages": "p82"
+          }
+        },
+        {
+          "sentence": "Figure [4.1] Decision tree for selecting a calculation method for emissions from upstream transportation Use spend-based data method Use distance- based method Use fuel-based method Is data available on the mass, distance and mode of each shipment delivered by transportation providers? Is data available on the types and quantities/ cost of fuels consumed during transportation? If multiple products are shipped on individual vehicles, is data available on the quantities of various products shipped? Does transportation of purchased goods contribute significantly to scope 3 emissions (based on screening) or is engagement with transportation providers otherwise relevant to the business goals? no no no no yes yes yes yes Companies may use the following methods to calculate scope 3 emissions from transportation:",
+          "signals": [
+            "defers to a decision tree"
+          ],
+          "methods_named": [
+            "fuel-based method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00050",
+            "pages": "p51"
+          }
+        }
+      ],
+      "weak_evidence_count": 2,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    },
+    {
+      "category": "CAPITAL_GOODS",
+      "label": "Capital Goods",
+      "scope": "Scope 3",
+      "rules": [
+        {
+          "rule_id": "CAPITAL_GOODS__SUPPLIER_SPEC__001",
+          "methodology": "SUPPLIER_SPEC",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "CAPITAL_GOODS__AVG_MASS__002",
+          "methodology": "AVG_MASS",
+          "preference_rank": 2
+        },
+        {
+          "rule_id": "CAPITAL_GOODS__EEIO__003",
+          "methodology": "EEIO",
+          "preference_rank": 3
+        }
+      ],
+      "strong_evidence": [
+        {
+          "sentence": "∑ (quantities of capital good purchased (e.g., kg) × supplier-specific product emission factor of capital good (e.g., kg CO2e/kg)) • Quantities or units of capital goods pur- chased in the reporting year • Supplier-specific emission factors for the capital goods (e.g., if the supplier has conducted a reliable cradle-to-gate GHG inventory, product footprint or internal LCA report) Hybrid method (where suppli- er-specific activity data is available for all activities associated with producing the pur- chased goods) sum across capital goods:",
+          "signals": [
+            "conditional availability"
+          ],
+          "methods_named": [
+            "hybrid method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00169",
+            "pages": "p164"
+          }
+        },
+        {
+          "sentence": "or • Cradle-to-gate emission factors of the capital goods per unit of economic value (e.g., kg CO2e/$) Hybrid method (where only allocated scope 1 and 2 emissions and waste data are available from supplier) sum across capital goods:",
+          "signals": [
+            "conditional availability"
+          ],
+          "methods_named": [
+            "hybrid method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00170",
+            "pages": "p164"
+          }
+        },
+        {
+          "sentence": "Appendix D Calculation formula summary tables Technical Guidance for Calculating Scope 3 Emissions [163] Method Calculation Formula Activity Data Needed Emission Factor Needed Hybrid method (where only allocated scope 1 and 2 emissions and waste data are available from supplier) sum across purchased goods and services:",
+          "signals": [
+            "conditional availability"
+          ],
+          "methods_named": [
+            "hybrid method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00168",
+            "pages": "p163"
+          }
+        }
+      ],
+      "weak_evidence_count": 2,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    },
+    {
+      "category": "DOWNSTREAM_LEASED",
+      "label": "Downstream Leased Assets",
+      "scope": "Scope 3",
+      "rules": [
+        {
+          "rule_id": "DOWNSTREAM_LEASED__ASSET_SPEC__001",
+          "methodology": "ASSET_SPEC",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "DOWNSTREAM_LEASED__FLOOR_AREA__002",
+          "methodology": "FLOOR_AREA",
+          "preference_rank": 2
+        },
+        {
+          "rule_id": "DOWNSTREAM_LEASED__SPEND_BASED__003",
+          "methodology": "SPEND_BASED",
+          "preference_rank": 3
+        }
+      ],
+      "strong_evidence": [
+        {
+          "sentence": "Figure [8.1] Decision tree for selecting a calculation method for emissions from upstream leased assets Asset-specific method This method involves collecting asset-specific (e.g., site-specific) fuel and energy and/or scope 1 and scope 2 emissions data from individual leased assets.",
+          "signals": [
+            "defers to a decision tree"
+          ],
+          "methods_named": [
+            "asset-specific method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00096",
+            "pages": "p95"
+          }
+        },
+        {
+          "sentence": "The average-data method should be used when purchase records, electricity bills, or meter readings of fuel or energy use are not available or applicable.",
+          "signals": [
+            "normative direction"
+          ],
+          "methods_named": [
+            "average-data method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00101",
+            "pages": "p100"
+          }
+        },
+        {
+          "sentence": "http://www.eia.doe.gov/emeu/cbecs Calculation formula [8.4] Average-data method for leased buildings (where floor space data is available) CO2e emissions from leased assets = sum across building types:",
+          "signals": [
+            "conditional availability"
+          ],
+          "methods_named": [
+            "average-data method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00102",
+            "pages": "p101"
+          }
+        }
+      ],
+      "weak_evidence_count": 1,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    },
+    {
+      "category": "DOWNSTREAM_TRANSPORT",
+      "label": "Downstream Transportation & Distribution",
+      "scope": "Scope 3",
+      "rules": [
+        {
+          "rule_id": "DOWNSTREAM_TRANSPORT__WT_DIST__001",
+          "methodology": "WT_DIST",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "DOWNSTREAM_TRANSPORT__FUEL_BASED__002",
+          "methodology": "FUEL_BASED",
+          "preference_rank": 2
+        },
+        {
+          "rule_id": "DOWNSTREAM_TRANSPORT__VEH_DIST__003",
+          "methodology": "VEH_DIST",
+          "preference_rank": 3
+        },
+        {
+          "rule_id": "DOWNSTREAM_TRANSPORT__SPEND_BASED__004",
+          "methodology": "SPEND_BASED",
+          "preference_rank": 4
+        }
+      ],
+      "strong_evidence": [
+        {
+          "sentence": "Figure [4.2] Decision tree for selecting a calculation method for emissions from upstream distribution Site-specific method This method involves collecting site-specific fuel and energy data from the storage facility (e.g., warehouses, distribution centres) of individual distribution activities, and multiplying them by appropriate emission factors.",
+          "signals": [
+            "defers to a decision tree"
+          ],
+          "methods_named": [
+            "site-specific method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00066",
+            "pages": "p67"
+          }
+        },
+        {
+          "sentence": "Technical Guidance for Calculating Scope 3 Emissions [70] CATEGORY 4 Upstream Transportation and Distribution Average-data method Companies should use the average-data method where supply-chain specific data is unavailable.",
+          "signals": [
+            "normative direction"
+          ],
+          "methods_named": [
+            "average-data method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00069",
+            "pages": "p70"
+          }
+        },
+        {
+          "sentence": "Technical Guidance for Calculating Scope 3 Emissions [65] CATEGORY 4 Upstream Transportation and Distribution Spend-based method If the fuel-based method and distance method cannot be applied (e.g., due to data limitations), companies should apply the spend-based method to calculate the emissions from transportation.",
+          "signals": [
+            "normative direction"
+          ],
+          "methods_named": [
+            "fuel-based method",
+            "spend-based method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00064",
+            "pages": "p65"
+          }
+        }
+      ],
+      "weak_evidence_count": 2,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    },
+    {
+      "category": "EMPLOYEE_COMMUTING",
+      "label": "Employee Commuting",
+      "scope": "Scope 3",
+      "rules": [
+        {
+          "rule_id": "EMPLOYEE_COMMUTING__DIST_BASED__001",
+          "methodology": "DIST_BASED",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "EMPLOYEE_COMMUTING__FUEL_BASED__002",
+          "methodology": "FUEL_BASED",
+          "preference_rank": 2
+        },
+        {
+          "rule_id": "EMPLOYEE_COMMUTING__AVG_DATA__003",
+          "methodology": "AVG_DATA",
+          "preference_rank": 3
+        }
+      ],
+      "strong_evidence": [
+        {
+          "sentence": "Technical Guidance for Calculating Scope 3 Emissions [88] CATEGORY 7 Employee Commuting Figure [7.1] Decision tree for selecting a calculation method for emissions from employee commuting Fuel-based method If data is available on the quantity or amount spent on fuel by employees for commuting, companies may apply the fuel-based method.",
+          "signals": [
+            "defers to a decision tree"
+          ],
+          "methods_named": [
+            "fuel-based method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00089",
+            "pages": "p88"
+          }
+        }
+      ],
+      "weak_evidence_count": 1,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    },
+    {
+      "category": "END_OF_LIFE",
+      "label": "End-of-Life Treatment of Sold Products",
+      "scope": "Scope 3",
+      "rules": [
+        {
+          "rule_id": "END_OF_LIFE__WASTE_TYPE__001",
+          "methodology": "WASTE_TYPE",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "END_OF_LIFE__WASTE_TREAT__002",
+          "methodology": "WASTE_TREAT",
+          "preference_rank": 2
+        },
+        {
+          "rule_id": "END_OF_LIFE__AVG_DATA__003",
+          "methodology": "AVG_DATA",
+          "preference_rank": 3
+        }
+      ],
+      "strong_evidence": [
+        {
+          "sentence": "In such cases, companies should use the average-data method.",
+          "signals": [
+            "normative direction"
+          ],
+          "methods_named": [
+            "average-data method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00108",
+            "pages": "p107"
+          }
+        },
+        {
+          "sentence": "Figure [10.1] Decision tree for selecting a calculation method for emissions from processing of sold products Site-specific method To calculate emissions from the processing of sold products by third parties, companies should collect either of the following types of data from downstream value chain partners:",
+          "signals": [
+            "defers to a decision tree"
+          ],
+          "methods_named": [
+            "site-specific method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00108",
+            "pages": "p107"
+          }
+        }
+      ],
+      "weak_evidence_count": 2,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    },
+    {
+      "category": "FERA",
+      "label": "Fuel & Energy-Related Activities",
+      "scope": "Scope 3",
+      "rules": [
+        {
+          "rule_id": "FERA__WTT_FUEL__001",
+          "methodology": "WTT_FUEL",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "FERA__TD_LOSS__002",
+          "methodology": "TD_LOSS",
+          "preference_rank": 2
+        },
+        {
+          "rule_id": "FERA__SPEND_BASED__003",
+          "methodology": "SPEND_BASED",
+          "preference_rank": 3
+        }
+      ],
+      "strong_evidence": [
+        {
+          "sentence": "If using the supplier-specific method, companies should use fuel-provider-specific emission factors for extraction, production, and transportation of fuels per unit of fuel consumed (e.g., kg CO2e/kWh), by fuel type and country/region.",
+          "signals": [
+            "normative direction"
+          ],
+          "methods_named": [
+            "supplier-specific method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00040",
+            "pages": "p41"
+          }
+        },
+        {
+          "sentence": "If using the average-data method, companies should use average emission factors for upstream emissions per unit of consumption (e.g., kg CO2e/kWh).",
+          "signals": [
+            "normative direction"
+          ],
+          "methods_named": [
+            "average-data method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00040",
+            "pages": "p41"
+          }
+        }
+      ],
+      "weak_evidence_count": 3,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    },
+    {
+      "category": "FRANCHISES",
+      "label": "Franchises",
+      "scope": "Scope 3",
+      "rules": [
+        {
+          "rule_id": "FRANCHISES__ASSET_SPEC__001",
+          "methodology": "ASSET_SPEC",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "FRANCHISES__FLOOR_AREA__002",
+          "methodology": "FLOOR_AREA",
+          "preference_rank": 2
+        },
+        {
+          "rule_id": "FRANCHISES__SPEND_BASED__003",
+          "methodology": "SPEND_BASED",
+          "preference_rank": 3
+        }
+      ],
+      "strong_evidence": [
+        {
+          "sentence": "Technical Guidance for Calculating Scope 3 Emissions [135] CATEGORY 14 Franchises Calculation formula [14.5] \u0007Average data method for other asset types or for leased buildings where floor space data is not available CO2e emissions from franchises = sum across building/asset types:",
+          "signals": [
+            "conditional availability"
+          ],
+          "methods_named": [
+            "average data method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00136",
+            "pages": "p135"
+          }
+        }
+      ],
+      "weak_evidence_count": 5,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    },
+    {
+      "category": "FUGITIVE_REFRIGERANTS",
+      "label": "Fugitive Emissions — Refrigerants",
+      "scope": "Scope 1",
+      "rules": [
+        {
+          "rule_id": "FUGITIVE_REFRIGERANTS__MAT_BALANCE__001",
+          "methodology": "MAT_BALANCE",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "FUGITIVE_REFRIGERANTS__SCREEN_LEAK__002",
+          "methodology": "SCREEN_LEAK",
+          "preference_rank": 2
+        },
+        {
+          "rule_id": "FUGITIVE_REFRIGERANTS__SCREEN_SIMPLE__003",
+          "methodology": "SCREEN_SIMPLE",
+          "preference_rank": 3
+        }
+      ],
+      "strong_evidence": [],
+      "weak_evidence_count": 1,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    },
+    {
+      "category": "HOTEL_STAY",
+      "label": "Hotel Stays & Accommodation",
+      "scope": "Scope 3",
+      "rules": [
+        {
+          "rule_id": "HOTEL_STAY__NIGHT_BASED__001",
+          "methodology": "NIGHT_BASED",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "HOTEL_STAY__SPEND_BASED__002",
+          "methodology": "SPEND_BASED",
+          "preference_rank": 2
+        }
+      ],
+      "strong_evidence": [],
+      "weak_evidence_count": 1,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    },
+    {
+      "category": "INVESTMENTS",
+      "label": "Investments",
+      "scope": "Scope 3",
+      "rules": [
+        {
+          "rule_id": "INVESTMENTS__INVEST_SPEC__001",
+          "methodology": "INVEST_SPEC",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "INVESTMENTS__ECON_ALLOC__002",
+          "methodology": "ECON_ALLOC",
+          "preference_rank": 2
+        },
+        {
+          "rule_id": "INVESTMENTS__EEIO__003",
+          "methodology": "EEIO",
+          "preference_rank": 3
+        }
+      ],
+      "strong_evidence": [
+        {
+          "sentence": "Figure [15.1] Decision tree for selecting a calculation method for emissions from equity investments Investment-specific method The investment-specific method involves collecting scope 1 and scope 2 emissions directly from investee companies and allocating these emissions based upon the proportion of the investment.",
+          "signals": [
+            "defers to a decision tree"
+          ],
+          "methods_named": [
+            "investment-specific method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00143",
+            "pages": "p141"
+          }
+        },
+        {
+          "sentence": "Technical Guidance for Calculating Scope 3 Emissions [147] CATEGORY 15 Investments Figure [15.2] \u0007Decision tree for selecting a calculation method for emissions from project finance and debt investments with known use of proceeds Use average-data method Use project-specific approach no no Can the investee company provide scope 1 and scope 2 data for the relevant project? yes yes Does the investment contribute significantly to scope 3 emissions (based on screening) or is engagement with investee company otherwise relevant to the business goals? Project-specific method The project-specific method involves collecting scope 1 and scope 2 emissions directly from the investee company for the relevant project(s) and allocating these emissions based on the investor’s proportional share of total project costs (total equity plus debt).",
+          "signals": [
+            "defers to a decision tree"
+          ],
+          "methods_named": [
+            "average-data method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00150",
+            "pages": "p147"
+          }
+        }
+      ],
+      "weak_evidence_count": 2,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    },
+    {
+      "category": "MOBILE_COMBUSTION",
+      "label": "Mobile Combustion — Owned Fleet",
+      "scope": "Scope 1",
+      "rules": [
+        {
+          "rule_id": "MOBILE_COMBUSTION__FUEL_BASED__001",
+          "methodology": "FUEL_BASED",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "MOBILE_COMBUSTION__DIST_BASED__002",
+          "methodology": "DIST_BASED",
+          "preference_rank": 2
+        },
+        {
+          "rule_id": "MOBILE_COMBUSTION__VEH_DIST__003",
+          "methodology": "VEH_DIST",
+          "preference_rank": 3
+        },
+        {
+          "rule_id": "MOBILE_COMBUSTION__SPEND_BASED__004",
+          "methodology": "SPEND_BASED",
+          "preference_rank": 4
+        }
+      ],
+      "strong_evidence": [
+        {
+          "sentence": "Figure 3.2.2 shows the decision tree for CO2 that guides the choice of either the Tier 1 or Tier 2 method.",
+          "signals": [
+            "defers to a decision tree"
+          ],
+          "methods_named": [
+            "tier 2 method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "2006 Guidelines V2 Ch3 Mobile Combustion",
+            "edition": "2006",
+            "year": 2006,
+            "chunk_id": "v2-3-ch3-mobile-combustion#c00009",
+            "pages": "pp10-11"
+          }
+        }
+      ],
+      "weak_evidence_count": 6,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    },
+    {
+      "category": "PROCESSING_SOLD",
+      "label": "Processing of Sold Products",
+      "scope": "Scope 3",
+      "rules": [
+        {
+          "rule_id": "PROCESSING_SOLD__SITE_PROC__001",
+          "methodology": "SITE_PROC",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "PROCESSING_SOLD__AVG_DATA__002",
+          "methodology": "AVG_DATA",
+          "preference_rank": 2
+        }
+      ],
+      "strong_evidence": [
+        {
+          "sentence": "In such cases, companies should use the average-data method.",
+          "signals": [
+            "normative direction"
+          ],
+          "methods_named": [
+            "average-data method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00108",
+            "pages": "p107"
+          }
+        },
+        {
+          "sentence": "Figure [10.1] Decision tree for selecting a calculation method for emissions from processing of sold products Site-specific method To calculate emissions from the processing of sold products by third parties, companies should collect either of the following types of data from downstream value chain partners:",
+          "signals": [
+            "defers to a decision tree"
+          ],
+          "methods_named": [
+            "site-specific method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00108",
+            "pages": "p107"
+          }
+        },
+        {
+          "sentence": "Technical Guidance for Calculating Scope 3 Emissions [108] CATEGORY 10 Processing of Sold Products If data cannot be obtained from downstream third party partners, the average data method should be used.",
+          "signals": [
+            "normative direction"
+          ],
+          "methods_named": [
+            "average data method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00109",
+            "pages": "p108"
+          }
+        }
+      ],
+      "weak_evidence_count": 2,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    },
+    {
+      "category": "PROCESS_EMISSIONS",
+      "label": "Industrial Process Emissions",
+      "scope": "Scope 1",
+      "rules": [
+        {
+          "rule_id": "PROCESS_EMISSIONS__PROC_STOICH__001",
+          "methodology": "PROC_STOICH",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "PROCESS_EMISSIONS__PROC_MASS__002",
+          "methodology": "PROC_MASS",
+          "preference_rank": 2
+        }
+      ],
+      "strong_evidence": [
+        {
+          "sentence": "In such cases, companies should use the average-data method.",
+          "signals": [
+            "normative direction"
+          ],
+          "methods_named": [
+            "average-data method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00108",
+            "pages": "p107"
+          }
+        },
+        {
+          "sentence": "Figure [10.1] Decision tree for selecting a calculation method for emissions from processing of sold products Site-specific method To calculate emissions from the processing of sold products by third parties, companies should collect either of the following types of data from downstream value chain partners:",
+          "signals": [
+            "defers to a decision tree"
+          ],
+          "methods_named": [
+            "site-specific method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00108",
+            "pages": "p107"
+          }
+        }
+      ],
+      "weak_evidence_count": 6,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    },
+    {
+      "category": "PURCHASED_ELECTRICITY",
+      "label": "Purchased Electricity",
+      "scope": "Scope 2",
+      "rules": [
+        {
+          "rule_id": "PURCHASED_ELECTRICITY__LOC_BASED__001",
+          "methodology": "LOC_BASED",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "PURCHASED_ELECTRICITY__MKT_BASED__002",
+          "methodology": "MKT_BASED",
+          "preference_rank": 2
+        },
+        {
+          "rule_id": "PURCHASED_ELECTRICITY__SPEND_BASED__003",
+          "methodology": "SPEND_BASED",
+          "preference_rank": 3
+        }
+      ],
+      "strong_evidence": [
+        {
+          "sentence": "∑ (quantities of good purchased (e.g., kg) × supplier-specific product emission factor of purchased good or service (e.g., kg CO2e/kg)) • Quantities or units of goods or services purchased • Supplier-specific emission factors for the pur- chased goods or services (e.g., if the supplier has conducted a reliable cradle-to-gate GHG invento- ry, product footprint or internal LCA report) Hybrid method (where supplier- specific activity data is available for all activities associated with producing the purchased goods) sum across purchased goods and services:",
+          "signals": [
+            "conditional availability"
+          ],
+          "methods_named": [
+            "hybrid method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00166",
+            "pages": "p162"
+          }
+        },
+        {
+          "sentence": "For any individual operations in the corporate inventory where market- based method data on the hierarchy is not applicable or available, data from the location-based method should be used to represent the emissions from the facility (see Table 6.3).",
+          "signals": [
+            "normative direction",
+            "explicit hierarchy"
+          ],
+          "methods_named": [
+            "location-based method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Scope 2 Guidance",
+            "edition": "Amendment to the Corporate Standard",
+            "year": 2015,
+            "chunk_id": "ghg-protocol-scope-2-guidance-final-2015#c00054",
+            "pages": "p46"
+          }
+        },
+        {
+          "sentence": "Technical Guidance for Calculating Scope 3 Emissions [33] CATEGORY 1 Purchased Goods and Services Spend-based method If the supplier-specific method, hybrid method, and average-data method are not feasible (e.g., due to data limitations), companies should apply the average spend-based method by collecting data on the economic value of purchased goods and services and multiplying them by the relevant EEIO emission factors.",
+          "signals": [
+            "explicit fallback: names methods that must be infeasible first",
+            "normative direction"
+          ],
+          "methods_named": [
+            "average-data method",
+            "hybrid method",
+            "spend-based method",
+            "supplier-specific method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00032",
+            "pages": "p33"
+          }
+        },
+        {
+          "sentence": "Appendix D Calculation formula summary tables Technical Guidance for Calculating Scope 3 Emissions [163] Method Calculation Formula Activity Data Needed Emission Factor Needed Hybrid method (where only allocated scope 1 and 2 emissions and waste data are available from supplier) sum across purchased goods and services:",
+          "signals": [
+            "conditional availability"
+          ],
+          "methods_named": [
+            "hybrid method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00168",
+            "pages": "p163"
+          }
+        }
+      ],
+      "weak_evidence_count": 3,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    },
+    {
+      "category": "PURCHASED_GOODS",
+      "label": "Purchased Goods & Services",
+      "scope": "Scope 3",
+      "rules": [
+        {
+          "rule_id": "PURCHASED_GOODS__SUPPLIER_SPEC__001",
+          "methodology": "SUPPLIER_SPEC",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "PURCHASED_GOODS__AVG_MASS__002",
+          "methodology": "AVG_MASS",
+          "preference_rank": 2
+        },
+        {
+          "rule_id": "PURCHASED_GOODS__EEIO__003",
+          "methodology": "EEIO",
+          "preference_rank": 3
+        },
+        {
+          "rule_id": "PURCHASED_GOODS__SPEND_BASED__004",
+          "methodology": "SPEND_BASED",
+          "preference_rank": 4
+        }
+      ],
+      "strong_evidence": [
+        {
+          "sentence": "Technical Guidance for Calculating Scope 3 Emissions [33] CATEGORY 1 Purchased Goods and Services Spend-based method If the supplier-specific method, hybrid method, and average-data method are not feasible (e.g., due to data limitations), companies should apply the average spend-based method by collecting data on the economic value of purchased goods and services and multiplying them by the relevant EEIO emission factors.",
+          "signals": [
+            "explicit fallback: names methods that must be infeasible first",
+            "normative direction"
+          ],
+          "methods_named": [
+            "average-data method",
+            "hybrid method",
+            "spend-based method",
+            "supplier-specific method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00032",
+            "pages": "p33"
+          }
+        },
+        {
+          "sentence": "Technical Guidance for Calculating Scope 3 Emissions [27] CATEGORY 1 Purchased Goods and Services Calculation formula [1.2] \u0007Hybrid method (where supplier-specific activity data is available for all activities associated with producing the purchased goods) CO2e emissions for purchased goods and services = sum across purchased goods and services:",
+          "signals": [
+            "conditional availability"
+          ],
+          "methods_named": [
+            "hybrid method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00026",
+            "pages": "p27"
+          }
+        },
+        {
+          "sentence": "Appendix D Calculation formula summary tables Technical Guidance for Calculating Scope 3 Emissions [163] Method Calculation Formula Activity Data Needed Emission Factor Needed Hybrid method (where only allocated scope 1 and 2 emissions and waste data are available from supplier) sum across purchased goods and services:",
+          "signals": [
+            "conditional availability"
+          ],
+          "methods_named": [
+            "hybrid method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00168",
+            "pages": "p163"
+          }
+        },
+        {
+          "sentence": "∑ (quantities of good purchased (e.g., kg) × supplier-specific product emission factor of purchased good or service (e.g., kg CO2e/kg)) • Quantities or units of goods or services purchased • Supplier-specific emission factors for the pur- chased goods or services (e.g., if the supplier has conducted a reliable cradle-to-gate GHG invento- ry, product footprint or internal LCA report) Hybrid method (where supplier- specific activity data is available for all activities associated with producing the purchased goods) sum across purchased goods and services:",
+          "signals": [
+            "conditional availability"
+          ],
+          "methods_named": [
+            "hybrid method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00166",
+            "pages": "p162"
+          }
+        }
+      ],
+      "weak_evidence_count": 3,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    },
+    {
+      "category": "PURCHASED_STEAM",
+      "label": "Purchased Steam, Heat & Cooling",
+      "scope": "Scope 2",
+      "rules": [
+        {
+          "rule_id": "PURCHASED_STEAM__SUPPLIER_SPEC__001",
+          "methodology": "SUPPLIER_SPEC",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "PURCHASED_STEAM__LOC_BASED__002",
+          "methodology": "LOC_BASED",
+          "preference_rank": 2
+        },
+        {
+          "rule_id": "PURCHASED_STEAM__SPEND_BASED__003",
+          "methodology": "SPEND_BASED",
+          "preference_rank": 3
+        }
+      ],
+      "strong_evidence": [],
+      "weak_evidence_count": 2,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    },
+    {
+      "category": "STATIONARY_COMBUSTION",
+      "label": "Stationary Combustion",
+      "scope": "Scope 1",
+      "rules": [
+        {
+          "rule_id": "STATIONARY_COMBUSTION__FUEL_BASED__001",
+          "methodology": "FUEL_BASED",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "STATIONARY_COMBUSTION__ENERGY_CONTENT__002",
+          "methodology": "ENERGY_CONTENT",
+          "preference_rank": 2
+        },
+        {
+          "rule_id": "STATIONARY_COMBUSTION__SPEND_BASED__003",
+          "methodology": "SPEND_BASED",
+          "preference_rank": 3
+        }
+      ],
+      "strong_evidence": [],
+      "weak_evidence_count": 2,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    },
+    {
+      "category": "UPSTREAM_LEASED",
+      "label": "Upstream Leased Assets",
+      "scope": "Scope 3",
+      "rules": [
+        {
+          "rule_id": "UPSTREAM_LEASED__ASSET_SPEC__001",
+          "methodology": "ASSET_SPEC",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "UPSTREAM_LEASED__FLOOR_AREA__002",
+          "methodology": "FLOOR_AREA",
+          "preference_rank": 2
+        },
+        {
+          "rule_id": "UPSTREAM_LEASED__SPEND_BASED__003",
+          "methodology": "SPEND_BASED",
+          "preference_rank": 3
+        }
+      ],
+      "strong_evidence": [
+        {
+          "sentence": "Figure [8.1] Decision tree for selecting a calculation method for emissions from upstream leased assets Asset-specific method This method involves collecting asset-specific (e.g., site-specific) fuel and energy and/or scope 1 and scope 2 emissions data from individual leased assets.",
+          "signals": [
+            "defers to a decision tree"
+          ],
+          "methods_named": [
+            "asset-specific method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00096",
+            "pages": "p95"
+          }
+        },
+        {
+          "sentence": "The average-data method should be used when purchase records, electricity bills, or meter readings of fuel or energy use are not available or applicable.",
+          "signals": [
+            "normative direction"
+          ],
+          "methods_named": [
+            "average-data method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00101",
+            "pages": "p100"
+          }
+        },
+        {
+          "sentence": "http://www.eia.doe.gov/emeu/cbecs Calculation formula [8.4] Average-data method for leased buildings (where floor space data is available) CO2e emissions from leased assets = sum across building types:",
+          "signals": [
+            "conditional availability"
+          ],
+          "methods_named": [
+            "average-data method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00102",
+            "pages": "p101"
+          }
+        }
+      ],
+      "weak_evidence_count": 2,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    },
+    {
+      "category": "UPSTREAM_TRANSPORT",
+      "label": "Upstream Transportation & Distribution",
+      "scope": "Scope 3",
+      "rules": [
+        {
+          "rule_id": "UPSTREAM_TRANSPORT__WT_DIST__001",
+          "methodology": "WT_DIST",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "UPSTREAM_TRANSPORT__FUEL_BASED__002",
+          "methodology": "FUEL_BASED",
+          "preference_rank": 2
+        },
+        {
+          "rule_id": "UPSTREAM_TRANSPORT__VEH_DIST__003",
+          "methodology": "VEH_DIST",
+          "preference_rank": 3
+        },
+        {
+          "rule_id": "UPSTREAM_TRANSPORT__SPEND_BASED__004",
+          "methodology": "SPEND_BASED",
+          "preference_rank": 4
+        }
+      ],
+      "strong_evidence": [
+        {
+          "sentence": "Figure [4.2] Decision tree for selecting a calculation method for emissions from upstream distribution Site-specific method This method involves collecting site-specific fuel and energy data from the storage facility (e.g., warehouses, distribution centres) of individual distribution activities, and multiplying them by appropriate emission factors.",
+          "signals": [
+            "defers to a decision tree"
+          ],
+          "methods_named": [
+            "site-specific method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00066",
+            "pages": "p67"
+          }
+        },
+        {
+          "sentence": "Technical Guidance for Calculating Scope 3 Emissions [70] CATEGORY 4 Upstream Transportation and Distribution Average-data method Companies should use the average-data method where supply-chain specific data is unavailable.",
+          "signals": [
+            "normative direction"
+          ],
+          "methods_named": [
+            "average-data method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00069",
+            "pages": "p70"
+          }
+        },
+        {
+          "sentence": "Technical Guidance for Calculating Scope 3 Emissions [65] CATEGORY 4 Upstream Transportation and Distribution Spend-based method If the fuel-based method and distance method cannot be applied (e.g., due to data limitations), companies should apply the spend-based method to calculate the emissions from transportation.",
+          "signals": [
+            "normative direction"
+          ],
+          "methods_named": [
+            "fuel-based method",
+            "spend-based method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00064",
+            "pages": "p65"
+          }
+        }
+      ],
+      "weak_evidence_count": 1,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    },
+    {
+      "category": "USE_OF_SOLD",
+      "label": "Use of Sold Products",
+      "scope": "Scope 3",
+      "rules": [
+        {
+          "rule_id": "USE_OF_SOLD__USE_DIRECT__001",
+          "methodology": "USE_DIRECT",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "USE_OF_SOLD__USE_FUEL__002",
+          "methodology": "USE_FUEL",
+          "preference_rank": 2
+        },
+        {
+          "rule_id": "USE_OF_SOLD__AVG_DATA__003",
+          "methodology": "AVG_DATA",
+          "preference_rank": 3
+        }
+      ],
+      "strong_evidence": [
+        {
+          "sentence": "In such cases, companies should use the average-data method.",
+          "signals": [
+            "normative direction"
+          ],
+          "methods_named": [
+            "average-data method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00108",
+            "pages": "p107"
+          }
+        },
+        {
+          "sentence": "Figure [10.1] Decision tree for selecting a calculation method for emissions from processing of sold products Site-specific method To calculate emissions from the processing of sold products by third parties, companies should collect either of the following types of data from downstream value chain partners:",
+          "signals": [
+            "defers to a decision tree"
+          ],
+          "methods_named": [
+            "site-specific method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00108",
+            "pages": "p107"
+          }
+        }
+      ],
+      "weak_evidence_count": 1,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    },
+    {
+      "category": "WASTE_OPERATIONS",
+      "label": "Waste Generated in Operations",
+      "scope": "Scope 3",
+      "rules": [
+        {
+          "rule_id": "WASTE_OPERATIONS__WASTE_TYPE__001",
+          "methodology": "WASTE_TYPE",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "WASTE_OPERATIONS__WASTE_TREAT__002",
+          "methodology": "WASTE_TREAT",
+          "preference_rank": 2
+        },
+        {
+          "rule_id": "WASTE_OPERATIONS__AVG_DATA__003",
+          "methodology": "AVG_DATA",
+          "preference_rank": 3
+        },
+        {
+          "rule_id": "WASTE_OPERATIONS__SPEND_BASED__004",
+          "methodology": "SPEND_BASED",
+          "preference_rank": 4
+        }
+      ],
+      "strong_evidence": [
+        {
+          "sentence": "Figure [5.2] Decision tree for selecting a calculation method for emissions from waste generated in operations Use the average-data method no Use the waste-type- specific method Can the reporting company differentiate its waste streams? Use supplier-specific method no no Can the waste treatment company provide waste-specific scope 1 and scope 2 data? yes yes yes Does waste generated in operations contribute significantly to scope 3 emissions (based on screening) or is engagement with waste treatment providers otherwise relevant to the business goals?",
+          "signals": [
+            "defers to a decision tree"
+          ],
+          "methods_named": [
+            "average-data method",
+            "supplier-specific method"
+          ],
+          "strength": "strong",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "year": 2013,
+            "chunk_id": "scope3-calculation-guidance-0#c00072",
+            "pages": "p73"
+          }
+        }
+      ],
+      "weak_evidence_count": 2,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    },
+    {
+      "category": "WATER_WASTEWATER",
+      "label": "Water Supply & Wastewater",
+      "scope": "Scope 3",
+      "rules": [
+        {
+          "rule_id": "WATER_WASTEWATER__VOL_WATER__001",
+          "methodology": "VOL_WATER",
+          "preference_rank": 1
+        },
+        {
+          "rule_id": "WATER_WASTEWATER__SPEND_BASED__002",
+          "methodology": "SPEND_BASED",
+          "preference_rank": 2
+        }
+      ],
+      "strong_evidence": [],
+      "weak_evidence_count": 1,
+      "decision": null,
+      "decided_by": null,
+      "rationale": null
+    }
+  ]
+}
