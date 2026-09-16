@@ -1,0 +1,116 @@
+{
+  "binding_policy_version": "2026.10.01",
+  "publisher": "GHG_PROTOCOL",
+  "release_id": "GHGP-XSECT-2.0",
+  "status": "DRAFT",
+  "approved_by": null,
+  "approved_at": null,
+
+  "about": "Maps OUR field vocabulary onto this publisher's category nodes. Authored and approved, never inferred at runtime: a wrong binding does not look wrong, it becomes an authoritative-looking required input on a governed calculation. Every entry is a claim a reviewer can dispute.",
+
+  "confidence_key": {
+    "EXACT": "the publisher node is the same physical thing as our selector",
+    "BROADER": "the publisher node is less specific than our selector - a real loss that must surface in the result, never be swallowed",
+    "NARROWER": "the publisher node is more specific; we are picking one of several and must say which"
+  },
+
+  "bindings": [
+    {
+      "binding_id": "B-SC-DIESEL",
+      "methodology": "FUEL_BASED",
+      "our_selector": { "activityCategory": "stationaryCombustion", "fuelType": "Diesel" },
+      "publisher_selector": { "fuel": "Gas/Diesel oil" },
+      "confidence": "EXACT",
+      "note": "IPCC/GHGP call road diesel 'Gas/Diesel oil'. Same product.",
+      "authored_by": "prototype"
+    },
+    {
+      "binding_id": "B-SC-NATGAS",
+      "methodology": "FUEL_BASED",
+      "our_selector": { "activityCategory": "stationaryCombustion", "fuelType": "Natural Gas" },
+      "publisher_selector": { "fuel": "Natural gas" },
+      "confidence": "EXACT",
+      "authored_by": "prototype"
+    },
+    {
+      "binding_id": "B-SC-JETKERO",
+      "methodology": "FUEL_BASED",
+      "our_selector": { "activityCategory": "stationaryCombustion", "fuelType": "Jet Kerosene (Jet A-1)" },
+      "publisher_selector": { "fuel": "Jet kerosene" },
+      "confidence": "EXACT",
+      "authored_by": "prototype"
+    },
+    {
+      "binding_id": "B-SC-PETROL",
+      "methodology": "FUEL_BASED",
+      "our_selector": { "activityCategory": "stationaryCombustion", "fuelType": "Petrol / Gasoline" },
+      "publisher_selector": { "fuel": "Motor gasoline" },
+      "confidence": "EXACT",
+      "authored_by": "prototype"
+    },
+    {
+      "binding_id": "B-SC-COAL",
+      "methodology": "FUEL_BASED",
+      "our_selector": { "activityCategory": "stationaryCombustion", "fuelType": "Coal — Bituminous" },
+      "publisher_selector": { "fuel": "Other bituminous coal" },
+      "confidence": "BROADER",
+      "note": "We say 'bituminous'; the publisher's nearest node is 'Other bituminous coal', a residual category. Less specific than asked for.",
+      "authored_by": "prototype"
+    },
+
+    {
+      "binding_id": "B-MD-CAR-DIESEL",
+      "methodology": "DIST_BASED",
+      "our_selector": { "activityCategory": "mobileCombustion", "mode": "Road — Car (Diesel)" },
+      "publisher_selector": { "vehicle": "Passenger Car", "fuel": "Diesel" },
+      "confidence": "EXACT",
+      "note": "This publisher's distance table carries CH4 and N2O only. A CO2e request against it must return DERIVATION_REQUIRED, not a sum of the two gases present.",
+      "authored_by": "prototype"
+    },
+    {
+      "binding_id": "B-MD-CAR-PETROL",
+      "methodology": "DIST_BASED",
+      "our_selector": { "activityCategory": "mobileCombustion", "mode": "Road — Car (Petrol)" },
+      "publisher_selector": { "vehicle": "Passenger Car", "fuel": "Gasoline" },
+      "confidence": "EXACT",
+      "authored_by": "prototype"
+    },
+    {
+      "binding_id": "B-MD-BUS",
+      "methodology": "DIST_BASED",
+      "our_selector": { "activityCategory": "businessTravel", "mode": "Road — Bus / Coach" },
+      "publisher_selector": { "vehicle": "Bus" },
+      "confidence": "BROADER",
+      "note": "Our mode does not name a fuel; the publisher splits Bus by fuel. Binding to the vehicle alone leaves several fuels applicable, which the resolver must report rather than pick between.",
+      "authored_by": "prototype"
+    },
+    {
+      "binding_id": "B-MD-LDV",
+      "methodology": "DIST_BASED",
+      "our_selector": { "activityCategory": "mobileCombustion", "mode": "Road — LGV (<3.5t)" },
+      "publisher_selector": { "vehicle": "Light Duty Vehicles" },
+      "confidence": "BROADER",
+      "note": "Light Duty Vehicles covers more than an LGV. Several published values here are RANGES.",
+      "authored_by": "prototype"
+    },
+    {
+      "binding_id": "B-MD-TWOWHEEL",
+      "methodology": "DIST_BASED",
+      "our_selector": { "activityCategory": "businessTravel", "mode": "Road — Two-wheeler" },
+      "publisher_selector": { "vehicle": "Motorcycles" },
+      "confidence": "EXACT",
+      "authored_by": "prototype"
+    }
+  ],
+
+  "unbound_known": [
+    {
+      "our_selector": { "mode": "Air — Short Haul (<1,600 km)" },
+      "why": "This workbook has no aviation distance factors. NO_BINDING is the correct answer; do not widen to a road mode."
+    },
+    {
+      "our_selector": { "activityCategory": "purchasedElectricity" },
+      "why": "Electricity sheets exist in the workbook but were not adapted in this slice, so nothing is bound yet."
+    }
+  ]
+}
