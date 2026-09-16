@@ -29,3 +29,4 @@ knowledge/corpus/_uploaded.json
 
 # ruleset: the store is rebuildable; published snapshots are the artefacts and ARE committed
 ruleset/store.db
+service/audit/

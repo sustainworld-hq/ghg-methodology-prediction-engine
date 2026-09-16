@@ -141,6 +141,33 @@ probe.forEach(p => {
 if (drift) fail(`${drift}/${probe.length} records differ between direct and cached`);
 else ok(`shape cache agrees with direct evaluation on ${probe.length} records`);
 
+/* The cache bug replay actually caught: identical shape, different values.
+   Validation reads values, so these two must NOT share a decision. */
+const sameShape = [
+  { category: 'fugitiveRefrigerants',
+    inputs: withCtx({ refrigerantType: 'R-410A', equipmentCharge: '310',
+                      leakRate: '8' }) },
+  { category: 'fugitiveRefrigerants',
+    inputs: withCtx({ refrigerantType: 'R-410A', equipmentCharge: '310',
+                      leakRate: '3000' }) },   // over 100% — must be rejected
+];
+const s0 = svc.decideCached(RS, sameShape[0]).status;
+const s1 = svc.decideCached(RS, sameShape[1]).status;
+if (s0 === s1) fail(`value-sensitive validation was cached away: both -> ${s0}`);
+else ok(`identical shape, different values -> ${s0} and ${s1}`);
+
+const yr = [
+  { category: 'businessTravel', inputs: Object.assign({}, CTX,
+      { distance: '100', distanceUnit: 'km', mode: 'Rail — Intercity' }) },
+  { category: 'businessTravel', inputs: Object.assign({}, CTX,
+      { reportingYear: '2019', distance: '100', distanceUnit: 'km',
+        mode: 'Rail — Intercity' }) },        // outside the open window
+];
+const y0 = svc.decideCached(RS, yr[0]).status;
+const y1 = svc.decideCached(RS, yr[1]).status;
+if (y0 === y1) fail(`closed reporting year was cached away: both -> ${y0}`);
+else ok(`same shape, closed reporting year -> ${y0} and ${y1}`);
+
 /* --- 8. batch: one bad record must not fail the batch --------------------- */
 
 const server = svc.start(version);

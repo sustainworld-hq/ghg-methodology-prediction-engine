@@ -12,6 +12,67 @@ working-out sits behind *Show how we decided*, so the everyday path stays short.
 
 ---
 
+## Two services. Do not confuse them.
+
+There are two runnable applications in this repo and they belong to different
+planes. Deploying the wrong one as production would put a language model in the
+path of every prediction.
+
+| | **AUTHORING** | **PRODUCTION** |
+| --- | --- | --- |
+| Command | `python server/app.py` | `node service/server.js` |
+| Port | 5000 | 5100 |
+| Purpose | read standards, propose rules | decide a methodology |
+| Model | **Groq / LLM** | **none** |
+| PDF parser | yes | **none** |
+| Vector index | yes | **none** |
+| Corpus access | yes | **none** |
+| Ruleset | writes candidates | **read-only snapshot** |
+| Output | candidate rules for review | decision + evidence + audit |
+| Determinism | not required | **required** |
+| Safe to expose | internal only | yes |
+
+```
+  standards ──► AUTHORING (server/app.py) ──► candidates ──► human approval
+                                                                   │
+                                                          ruleset/publish.py
+                                                                   │
+                                                          published snapshot
+                                                          + evidence bundle
+                                                                   │
+  activity records ──────────────────────► PRODUCTION (service/server.js)
+                                                                   │
+                                                    decision + evidence + audit
+```
+
+The boundary is enforced, not documented: `service/server.js` requires only
+Node builtins, and `node service/boundary.test.js` fails if a model client, PDF
+parser, vector index or corpus path ever appears in it.
+
+### Running the production service
+
+```bash
+node service/server.js                        # newest published ruleset
+node service/server.js --ruleset 2026.09.07   # pin a version
+
+curl localhost:5100/v1/ruleset                # what is loaded, and its hash
+curl -X POST localhost:5100/v1/methodology:predict -d '{...}'
+curl -X POST localhost:5100/v1/methodology:predictBatch --data-binary @batch.ndjson
+
+node service/replay.js                        # re-run every audited decision
+node service/boundary.test.js                 # prove the plane boundary holds
+```
+
+Every decision is appended to `service/audit/audit-<date>.jsonl` — the input
+snapshot, fingerprint, ruleset version and engine version, which is everything
+needed to re-run it. `replay.js` does exactly that and raises an alarm if any
+recorded decision no longer reproduces.
+
+Measured locally: **10,000 records in 422 ms**, 783 distinct shapes, and
+**10,000/10,000 replayed exactly**.
+
+---
+
 ## Run it
 
 Open **`methodology-prediction-engine.html`** in any browser. One file, everything inlined —

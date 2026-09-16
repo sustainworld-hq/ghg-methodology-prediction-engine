@@ -302,6 +302,16 @@ def api_fields():
 
 
 if __name__ == "__main__":
+    print("=" * 72)
+    print("  AUTHORING SERVICE — not for production prediction.")
+    print("  This process calls a language model, parses PDFs and reads the")
+    print("  corpus. It is for reading standards and proposing rules.")
+    print()
+    print("  The production prediction service is:  node service/server.js")
+    print("  It has no model, no parser and no index, and is held to that by")
+    print("  service/boundary.test.js.")
+    print("=" * 72)
+    print()
     if not os.environ.get("GROQ_API_KEY"):
         print("WARNING: GROQ_API_KEY is not set — prediction will fail.\n",
               file=sys.stderr)

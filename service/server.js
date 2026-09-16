@@ -30,8 +30,83 @@ const vm = require('vm');
 const crypto = require('crypto');
 
 const ROOT = path.join(__dirname, '..');
+const AUDIT_DIR = path.join(__dirname, 'audit');
 const SNAP_DIR = path.join(ROOT, 'ruleset', 'snapshots');
 const ENGINE_VERSION = '3.0.0';
+
+/* --------------------------------------------------------------- audit --- */
+/* Append-only JSONL, one file per UTC day.
+ *
+ * Not SQLite. node:sqlite exists but is flagged experimental and "might change
+ * at any time", which is the wrong property for a record that has to be
+ * readable during a 2029 review of a 2026 decision. A JSONL line needs no
+ * library, no schema migration and no running service to read.
+ *
+ * Only what is needed to REPLAY the decision is stored, never a prose trace:
+ * the trace is a pure function of (input_snapshot, ruleset_version,
+ * engine_version), so it is regenerated on demand. At 10k records per batch
+ * that is the difference between kilobytes and gigabytes.
+ *
+ * The execution plane writes here and nowhere else. It has no write access to
+ * the governed ruleset store, by design and by test. */
+
+let auditSeq = 0;
+const auditSeen = new Set();   // (batch_id, record_id) seen this process
+
+function auditPath(when) {
+  return path.join(AUDIT_DIR, `audit-${when.toISOString().slice(0, 10)}.jsonl`);
+}
+
+function auditLoadSeen() {
+  if (!fs.existsSync(AUDIT_DIR)) return;
+  for (const f of fs.readdirSync(AUDIT_DIR)) {
+    if (!f.endsWith('.jsonl')) continue;
+    const lines = fs.readFileSync(path.join(AUDIT_DIR, f), 'utf8').split('\n');
+    for (const l of lines) {
+      if (!l.trim()) continue;
+      try {
+        const e = JSON.parse(l);
+        if (e.batch_id) auditSeen.add(e.batch_id + '\u0000' + e.record_id);
+      } catch (err) { /* a truncated tail must not stop the service */ }
+    }
+  }
+}
+
+function auditWrite(entries) {
+  if (!entries.length) return { written: 0, skipped: 0 };
+  fs.mkdirSync(AUDIT_DIR, { recursive: true });
+  const now = new Date();
+  const out = [];
+  let skipped = 0;
+  for (const e of entries) {
+    const key = (e.batch_id || '') + '\u0000' + e.record_id;
+    if (e.batch_id && auditSeen.has(key)) { skipped++; continue; }
+    if (e.batch_id) auditSeen.add(key);
+    out.push(JSON.stringify(Object.assign(
+      { prediction_id: `${now.toISOString()}#${++auditSeq}` }, e)));
+  }
+  if (out.length) fs.appendFileSync(auditPath(now), out.join('\n') + '\n');
+  return { written: out.length, skipped };
+}
+
+function auditEntry(RS, record, decision, batchId) {
+  const inputs = record.inputs || record;
+  return {
+    batch_id: batchId || null,
+    record_id: record.record_id || null,
+    ruleset_version: RS.version,
+    engine_version: ENGINE_VERSION,
+    input_fingerprint: decision.input_fingerprint || null,
+    /* kept because the upstream row may change later; the audit must show what
+       was evaluated, not what the source system says today */
+    input_snapshot: Object.assign({ __category: record.category ||
+                                    record.activityCategory }, inputs),
+    status: decision.status,
+    methodology: decision.methodology || null,
+    matched_rule: decision.matched_rule || null,
+    decided_at: new Date().toISOString(),
+  };
+}
 
 /* ------------------------------------------------------------- loading --- */
 
@@ -83,31 +158,43 @@ function loadRuleset(version) {
 
 /* ------------------------------------------------------------ deciding --- */
 
-function decide(RS, record) {
-  const E = RS.E;
+function resolve(RS, record) {
   const catKey = record.category || record.activityCategory;
-  const cat = E.CATEGORY_BY_ID[catKey];
+  const cat = RS.E.CATEGORY_BY_ID[catKey];
+  if (!cat) return { cat: null, catKey };
+  const values = Object.assign({ activityCategory: cat.id },
+                               record.inputs || record);
+  return { cat, catKey, values };
+}
+
+function decide(RS, record) {
+  const { cat, catKey, values } = resolve(RS, record);
   if (!cat) {
     return { status: 'NO_RULESET',
              detail: `no approved rules for category "${catKey}"` };
   }
-
-  const values = Object.assign({ activityCategory: cat.id }, record.inputs || record);
-
-  const v = E.validate(values, cat);
+  const v = RS.E.validate(values, cat);
+  /* The fingerprint identifies the RECORD, so it is emitted whatever the
+     outcome. Omitting it on failure made the batch and replay paths disagree
+     about 387 validation failures that were in fact identical. */
+  const fingerprint = RS.E.recordHash(values, cat);
   if (!v.ok) {
     return { status: 'VALIDATION_FAILED', errors: v.errors,
-             category: cat.category || cat.id };
+             category: cat.category || cat.id,
+             ruleset_version: RS.version, engine_version: ENGINE_VERSION,
+             input_fingerprint: fingerprint };
   }
+  return shape(RS, cat, RS.E.evaluate(values, cat), fingerprint);
+}
 
-  const r = E.evaluate(values, cat);
+function shape(RS, cat, r, fingerprint) {
   const out = {
     status: r.status || (r.matched ? 'MATCHED' : 'INSUFFICIENT_DATA'),
     framework: RS.snap.framework,
     category: cat.category || cat.id,
     ruleset_version: RS.version,
     engine_version: ENGINE_VERSION,
-    input_fingerprint: E.recordHash(values, cat),
+    input_fingerprint: fingerprint,
   };
 
   if (out.status === 'MATCHED') {
@@ -136,9 +223,7 @@ function decide(RS, record) {
     }
   } else {
     out.gaps = r.evaluations.map(e => ({
-      rule: e.rule.id,
-      methodology: e.rule.methodology,
-      missing: e.missing,
+      rule: e.rule.id, methodology: e.rule.methodology, missing: e.missing,
     }));
   }
   return out;
@@ -159,32 +244,48 @@ function evidenceFor(RS, rule) {
   };
 }
 
-/* shape = category + which fields are populated. Same shape, same decision. */
-function shapeKey(RS, record) {
-  const catKey = record.category || record.activityCategory;
-  const inputs = record.inputs || record;
-  const present = Object.keys(inputs)
-    .filter(k => RS.E.isPresent(inputs, k)).sort().join(',');
-  return catKey + '|' + present;
+/* Caching, done soundly.
+ *
+ * Rule MATCHING is presence-based, so two records with the same category and
+ * the same populated-field set always match the same rule. VALIDATION is not:
+ * it reads values — the reporting year must be in the open window, numbers
+ * must be positive, a leak rate must be under 100. Caching on shape alone let
+ * a record with leakRate 50 and one with leakRate 3000 share a decision, which
+ * replay caught as 18 unreproducible entries.
+ *
+ * So validation runs per record, always, and only the rule evaluation is
+ * cached. Validation is a handful of comparisons; the saving was never there.
+ */
+
+function shapeKey(RS, cat, values) {
+  const present = Object.keys(values)
+    .filter(k => RS.E.isPresent(values, k)).sort().join(',');
+  return cat.id + '|' + present;
 }
 
 function decideCached(RS, record) {
-  const key = shapeKey(RS, record);
-  let hit = RS.shapeCache.get(key);
-  if (hit === undefined) {
-    hit = decide(RS, record);
-    RS.shapeCache.set(key, hit);
+  const { cat, catKey, values } = resolve(RS, record);
+  if (!cat) {
+    return { status: 'NO_RULESET',
+             detail: `no approved rules for category "${catKey}"` };
   }
-  /* fingerprint is per-record, not per-shape */
-  const catKey = record.category || record.activityCategory;
-  const cat = RS.E.CATEGORY_BY_ID[catKey];
-  const out = Object.assign({}, hit);
-  if (cat && hit.status !== 'NO_RULESET') {
-    const values = Object.assign({ activityCategory: cat.id },
-                                 record.inputs || record);
-    out.input_fingerprint = RS.E.recordHash(values, cat);
+
+  const v = RS.E.validate(values, cat);          // never cached
+  const fingerprint = RS.E.recordHash(values, cat);
+  if (!v.ok) {
+    return { status: 'VALIDATION_FAILED', errors: v.errors,
+             category: cat.category || cat.id,
+             ruleset_version: RS.version, engine_version: ENGINE_VERSION,
+             input_fingerprint: fingerprint };
   }
-  return out;
+
+  const key = shapeKey(RS, cat, values);
+  let r = RS.shapeCache.get(key);
+  if (r === undefined) {
+    r = RS.E.evaluate(values, cat);
+    RS.shapeCache.set(key, r);
+  }
+  return shape(RS, cat, r, fingerprint);
 }
 
 /* ------------------------------------------------------------- serving --- */
@@ -213,6 +314,8 @@ function start(version) {
   const RS = loadRuleset(version);
   const rules = RS.snap.categories.reduce((a, c) => a + c.rules.length, 0);
 
+  auditLoadSeen();
+
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
     try {
@@ -239,7 +342,9 @@ function start(version) {
 
       if (req.method === 'POST' && url.pathname === '/v1/methodology:predict') {
         const body = JSON.parse(await readBody(req) || '{}');
-        return json(res, 200, decide(RS, body));
+        const d = decide(RS, body);
+        auditWrite([auditEntry(RS, body, d, body.batch_id)]);
+        return json(res, 200, d);
       }
 
       if (req.method === 'POST' && url.pathname === '/v1/methodology:predictBatch') {
@@ -265,6 +370,7 @@ function start(version) {
 
         const t0 = process.hrtime.bigint();
         const results = [];
+        const recsParsed = [];
         let bad = 0;
         recs.forEach((line, i) => {
           let rec;
@@ -279,9 +385,15 @@ function start(version) {
           /* One bad record never fails the batch. */
           const d = decideCached(RS, rec);
           d.record_id = rec.record_id || `line:${i + (hasHeader ? 2 : 1)}`;
+          recsParsed.push(rec);
           results.push(d);
         });
         const ms = Number(process.hrtime.bigint() - t0) / 1e6;
+
+        const audited = auditWrite(results
+          .filter(r => !String(r.record_id).startsWith('line:') || r.status !== 'VALIDATION_FAILED')
+          .map((r, i) => auditEntry(RS, recsParsed[i] || { record_id: r.record_id },
+                                    r, header.batch_id)));
 
         const counts = {};
         results.forEach(r => { counts[r.status] = (counts[r.status] || 0) + 1; });
@@ -293,6 +405,7 @@ function start(version) {
           unparseable: bad,
           distinct_shapes: RS.shapeCache.size,
           elapsed_ms: Math.round(ms * 100) / 100,
+          audit: audited,
           status_counts: counts,
           results,
         });
@@ -309,7 +422,8 @@ function start(version) {
     console.log(`  ${RS.snap.categories.length} categories, ${rules} rules, ` +
                 `${Object.keys(RS.evidence.passages || {}).length} evidence passages`);
     console.log(`  sha256 ${String(RS.publishedSha).slice(0, 16)}…`);
-    console.log('  no model, no PDF parser, no vector index in this process');
+  console.log('  no model, no PDF parser, no vector index in this process');
+    console.log(`  audit -> ${path.relative(ROOT, AUDIT_DIR)}/ (append-only JSONL)`);
     console.log('  http://127.0.0.1:5100');
   });
   return server;
