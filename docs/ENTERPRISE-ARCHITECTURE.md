@@ -398,11 +398,11 @@ Tier 1 cases → compare against the authored baseline. `tools/roundtrip.js
 | --- | --- | --- |
 | Deterministic execution plane | ✅ pure functions, no DOM, no state | — |
 | No model in request path | ❌ `server/app.py` calls Groq on a cache miss | **Violates §1** |
-| Ruleset as source of truth | ⚠️ JS literals in `decision-tables.js` | Needs DB + versions |
-| Immutable published versions | ❌ static strings | No snapshot mechanism |
-| Applicability ≠ preference | ❌ ranks by counting `ranks_below` | **Violates §4** |
-| `MULTIPLE_APPLICABLE` status | ❌ always picks first match | **Violates §6** |
-| `DUAL_REPORTING_REQUIRED` | ❌ known defect, tracked as a failing case | Return type change |
+| Ruleset as source of truth | ✅ relational store, versioned, hashed snapshots | — |
+| Immutable published versions | ✅ enforced; a fix requires a new version | — |
+| Applicability ≠ preference | ✅ separate columns; 65 of 70 ranks NULL for want of evidence | — |
+| `MULTIPLE_APPLICABLE` status | ✅ returned when several apply and nothing orders them | — |
+| `DUAL_REPORTING_REQUIRED` | ✅ Scope 2 recorded `all_of`; engine returns both | — |
 | Batch API | ❌ single record | Not built |
 | Replayable audit | ⚠️ fingerprint exists, no store | Add `prediction_audit` |
 | Quote verification | ✅ V1, rejects before human sees it | — |
@@ -410,9 +410,9 @@ Tier 1 cases → compare against the authored baseline. `tools/roundtrip.js
 | Golden dataset | ⚠️ 20 cases, 13 citation-backed | Needs hundreds |
 | Framework as data | ⚠️ single framework assumed | Add `framework` dimension |
 
-Four are outright violations. None is hard to fix, but all four are load-bearing
-for an enterprise claim, and shipping the prototype's behaviour as production
-would be a mistake.
+Steps 1-3 of the build order are done. The remaining violation is that
+`server/app.py` still calls a model on a cache miss (§1); the batch endpoint and
+replayable audit store (§5, §7) are not built.
 
 ---
 

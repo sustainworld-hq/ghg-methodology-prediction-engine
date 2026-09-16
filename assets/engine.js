@@ -169,11 +169,78 @@ function evaluate(values, cat) {
     };
   });
 
+  /* Selecting among the applicable rules.
+   *
+   * A rule's preference_rank is the position the STANDARD establishes, and it
+   * is null when the standard establishes none. Null does not mean "worst"; it
+   * means unordered. When several rules apply and nothing governs the choice
+   * between them, the honest answer is to say so rather than to pick.
+   *
+   * Legacy tables carry no preference_rank at all. There, array order is the
+   * asserted order, so first-match-wins remains correct for them. */
+  const satisfied = evaluations.filter(function (e) { return e.satisfied; });
+  const governed = cat.rules.some(function (r) {
+    return Object.prototype.hasOwnProperty.call(r, 'preference_rank');
+  });
+
   let matched = null;
+  let status = 'INSUFFICIENT_DATA';
+  let applicable = [];
+
+  const dual = satisfied.filter(function (e) {
+    return e.rule.applies_count === 'all_of';
+  });
+
+  if (dual.length >= 2) {
+    /* The framework wants more than one figure for this activity. A single
+     * answer cannot express that, so it is not reduced to one. */
+    status = 'DUAL_REPORTING_REQUIRED';
+    applicable = dual;
+    matched = null;
+  } else if (satisfied.length === 0) {
+    status = 'INSUFFICIENT_DATA';
+  } else if (satisfied.length === 1 || !governed) {
+    status = 'MATCHED';
+    matched = satisfied[0];
+  } else {
+    /* Several apply. A rule with a rank sits BELOW the unranked ones: the
+     * evidence that produced a rank was "apply this when the others are not
+     * feasible". So unranked rules are considered first. */
+    const unranked = satisfied.filter(function (e) {
+      return e.rule.preference_rank === null || e.rule.preference_rank === undefined;
+    });
+    const ranked = satisfied.filter(function (e) {
+      return e.rule.preference_rank !== null && e.rule.preference_rank !== undefined;
+    });
+
+    if (unranked.length === 1) {
+      status = 'MATCHED';
+      matched = unranked[0];
+    } else if (unranked.length > 1) {
+      status = 'MULTIPLE_APPLICABLE';
+      applicable = unranked;
+    } else {
+      const best = Math.min.apply(null, ranked.map(function (e) {
+        return e.rule.preference_rank;
+      }));
+      const tied = ranked.filter(function (e) {
+        return e.rule.preference_rank === best;
+      });
+      if (tied.length === 1) {
+        status = 'MATCHED';
+        matched = tied[0];
+      } else {
+        status = 'MULTIPLE_APPLICABLE';
+        applicable = tied;
+      }
+    }
+  }
+
   evaluations.forEach(function (e) {
-    if (e.satisfied && !matched) { matched = e; e.status = 'hit'; }
-    else if (e.satisfied) { e.status = 'lower'; }
-    else { e.status = 'miss'; }
+    if (!e.satisfied) { e.status = 'miss'; }
+    else if (matched === e) { e.status = 'hit'; }
+    else if (applicable.indexOf(e) > -1) { e.status = 'applicable'; }
+    else { e.status = 'lower'; }
   });
 
   const code = matched ? matched.rule.methodology : 'INSUFFICIENT';
@@ -181,6 +248,18 @@ function evaluate(values, cat) {
     category: cat,
     evaluations: evaluations,
     matched: matched,
+    status: status,
+    applicable: applicable,
+    applicableMethods: applicable.map(function (e) {
+      return { code: e.rule.methodology,
+               name: (METHODOLOGIES[e.rule.methodology] || {}).name,
+               rule: e.rule.id };
+    }),
+    ambiguityReason: (status === 'MULTIPLE_APPLICABLE'
+      ? 'Several methods apply and the framework establishes no preference between them.'
+      : status === 'DUAL_REPORTING_REQUIRED'
+      ? 'The framework requires more than one of these to be reported.'
+      : null),
     methodologyCode: code,
     methodology: METHODOLOGIES[code],
     fieldsRead: cat.rules.reduce(function (acc, r) {

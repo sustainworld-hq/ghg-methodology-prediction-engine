@@ -145,6 +145,9 @@ def as_tables_js(snap: dict) -> str:
                 "optional": r["optional"],
                 "methodology": r["methodology"],
                 "note": r["note"],
+                # null is meaningful: the standard establishes no order here.
+                # The engine distinguishes null from "ranked last".
+                "preference_rank": r["preference_rank"],
                 "preference_basis": r["preference_basis"],
                 "applies_count": r["applies_count"],
             })

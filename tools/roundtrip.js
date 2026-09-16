@@ -43,8 +43,20 @@ function run(E, record) {
   const v = E.validate(record, cat);
   if (!v.ok) return { actual: '__validation_failure__', errors: v.errors };
   const r = E.evaluate(record, cat);
+  /* A status-aware read. Before this, MULTIPLE_APPLICABLE and
+     DUAL_REPORTING_REQUIRED both surfaced as "Insufficient Data", because the
+     harness only looked at the matched methodology and there isn't one. That
+     made a correct refusal to guess look identical to having no data. */
+  const st = r.status || 'MATCHED';
+  const label =
+    st === 'MULTIPLE_APPLICABLE' ? 'Multiple applicable'
+    : st === 'DUAL_REPORTING_REQUIRED' ? 'Dual reporting required'
+    : st === 'INSUFFICIENT_DATA' ? 'Insufficient Data'
+    : r.methodology.name;
   return {
-    actual: r.methodology.name,
+    actual: label,
+    status: st,
+    methods: (r.applicableMethods || []).map(m => m.name),
     rule: r.matched ? r.matched.rule.id : null,
     priority: r.matched ? r.matched.rule.priority : null,
     alsoQualified: r.evaluations.filter(e => e.status === 'lower')
@@ -54,10 +66,15 @@ function run(E, record) {
 
 /* ---------------------------------------------------------------- report -- */
 
-function report(E, label, strict) {
+function report(E, label, strict, governedMode) {
   const rows = CASES.cases.map(c => {
     const res = run(E, c.record);
-    const pass = res.actual === c.expect;
+    /* Some cases legitimately differ between the authored tables (which assert
+       an order) and the governed ruleset (where the standard establishes none).
+       expect_governed records that divergence instead of hiding it. */
+    const want = (governedMode && c.expect_governed) ? c.expect_governed : c.expect;
+    const pass = res.actual === want;
+    c._want = want;
     return { c, res, pass };
   });
 
@@ -78,9 +95,12 @@ function report(E, label, strict) {
     const extra = r.res.rule ? `  ${r.res.rule} p${r.res.priority}` : '';
     console.log(`  ${mark} ${r.c.id.padEnd(30)} ${r.res.actual}${extra}`);
     if (!r.pass && !r.c.expect_is_wrong) {
-      console.log(`         expected: ${r.c.expect}`);
+      console.log(`         expected: ${r.c._want}`);
       console.log(`         basis:    ${r.c.basis}${r.c.cite ? ' — ' + r.c.cite : ''}`);
       console.log(`         why:      ${r.c.why}`);
+    }
+    if (r.res.methods && r.res.methods.length) {
+      console.log(`         applicable: ${r.res.methods.join(', ')}`);
     }
     if (r.res.alsoQualified && r.res.alsoQualified.length) {
       console.log(`         (also qualified, outranked: ${r.res.alsoQualified.join(', ')})`);
@@ -158,8 +178,8 @@ function main() {
   if (get('--diff')) {
     const B = loadTables(path.resolve(get('--diff')));
     diff(A, B, 'authored', path.basename(get('--diff')));
-    const failA = report(A, 'authored tables', strict);
-    const failB = report(B, path.basename(get('--diff')), strict);
+    const failA = report(A, 'authored tables', strict, false);
+    const failB = report(B, path.basename(get('--diff')), strict, true);
     console.log(`\n${'='.repeat(64)}`);
     console.log(failA === failB
       ? `Both table sets fail the same ${failA} case(s) — derived behaviour matches.`
@@ -169,7 +189,7 @@ function main() {
 
   const target = alt ? path.resolve(alt) : authored;
   const E = alt ? loadTables(target) : A;
-  const bad = report(E, alt ? path.basename(target) : 'authored tables', strict);
+  const bad = report(E, alt ? path.basename(target) : 'authored tables', strict, !!alt);
 
   console.log('\nThis is the gate M2/M3 must eventually pass with DERIVED tables:');
   console.log('  node tools/roundtrip.js --diff <derived-tables.js>');
