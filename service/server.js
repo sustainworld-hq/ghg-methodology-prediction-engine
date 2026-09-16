@@ -310,7 +310,7 @@ function readBody(req) {
   });
 }
 
-function start(version) {
+function start(version, port) {
   const RS = loadRuleset(version);
   const rules = RS.snap.categories.reduce((a, c) => a + c.rules.length, 0);
 
@@ -319,6 +319,34 @@ function start(version) {
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
     try {
+      /* A browser opening the root used to get {"error":"not found"} — true,
+         but a terrible thing to hand a teammate a link to. */
+      if (req.method === 'GET' && (url.pathname === '/' ||
+                                   url.pathname === '/index.html')) {
+        const page = fs.readFileSync(path.join(__dirname, 'public', 'index.html'));
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8',
+                             'Content-Length': page.length });
+        return res.end(page);
+      }
+
+      /* What the form needs to build itself: categories, their fields and the
+         field dictionary. Read straight from the published snapshot. */
+      if (req.method === 'GET' && url.pathname === '/v1/catalogue') {
+        return json(res, 200, {
+          ruleset_version: RS.version,
+          fields: RS.snap.fields,
+          categories: RS.snap.categories.map(c => ({
+            id: c.legacy_id || c.category,
+            category: c.category,
+            label: c.label,
+            scope: c.scope,
+            fields: c.fields,
+            fieldOptions: c.fieldOptions || {},
+            rules: c.rules.length,
+          })),
+        });
+      }
+
       if (req.method === 'GET' && url.pathname === '/healthz') {
         return json(res, 200, { ok: true, ruleset: RS.version });
       }
@@ -417,14 +445,17 @@ function start(version) {
     }
   });
 
-  server.listen(5100, '127.0.0.1', () => {
+  /* Nullish, not falsy: port 0 is a legitimate request meaning "any free
+     port", and `port || …` treated it as unset and bound 5100 instead. */
+  const PORT = port ?? (process.env.PORT ? Number(process.env.PORT) : 5100);
+  server.listen(PORT, '127.0.0.1', () => {
     console.log(`methodology service — ruleset ${RS.version}`);
     console.log(`  ${RS.snap.categories.length} categories, ${rules} rules, ` +
                 `${Object.keys(RS.evidence.passages || {}).length} evidence passages`);
     console.log(`  sha256 ${String(RS.publishedSha).slice(0, 16)}…`);
   console.log('  no model, no PDF parser, no vector index in this process');
     console.log(`  audit -> ${path.relative(ROOT, AUDIT_DIR)}/ (append-only JSONL)`);
-    console.log('  http://127.0.0.1:5100');
+    console.log(`  http://127.0.0.1:${server.address().port}`);
   });
   return server;
 }

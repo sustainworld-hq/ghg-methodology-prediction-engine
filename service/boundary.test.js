@@ -170,7 +170,9 @@ else ok(`same shape, closed reporting year -> ${y0} and ${y1}`);
 
 /* --- 8. batch: one bad record must not fail the batch --------------------- */
 
-const server = svc.start(version);
+/* port 0 = let the OS pick. The test must be runnable while the real
+   service is up; it used to die with EADDRINUSE. */
+const server = svc.start(version, 0);
 setTimeout(() => {
   const ndjson = [
     JSON.stringify({ batch_id: 'b-test', ruleset_version: version }),
@@ -182,7 +184,7 @@ setTimeout(() => {
   ].join('\n');
 
   const req = http.request(
-    { host: '127.0.0.1', port: 5100, method: 'POST',
+    { host: '127.0.0.1', port: server.address().port, method: 'POST',
       path: '/v1/methodology:predictBatch',
       headers: { 'Content-Type': 'application/x-ndjson' } },
     resp => {

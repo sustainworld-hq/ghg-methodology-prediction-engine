@@ -121,7 +121,7 @@ def user_prompt(chunk_id: str, section: str, text: str, ask: str) -> str:
 
 # ----------------------------------------------------------------- call -----
 
-def dummytest1(prompt: str, model: str = DEFAULT_MODEL, key: str | None = None,
+def call(prompt: str, model: str = DEFAULT_MODEL, key: str | None = None,
          timeout: int = 120, retries: int = 4) -> dict:
     """One extraction call. Backs off on 429 rather than dropping the passage."""
     key = key or os.environ.get("GROQ_API_KEY")

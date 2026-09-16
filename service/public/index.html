@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Methodology Decision Service</title>
+<style>
+:root{--paper:#fff;--wash:#f7f8f7;--ink:#16181b;--ink2:#5c646b;--ink3:#949ba1;
+--line:#e6e8e6;--line2:#d2d6d2;--green:#0e6b4a;--greenw:#f1f8f4;--greenl:#bedccc;
+--amber:#8a5a0b;--amberw:#fdf8ef;--amberl:#ebd9b8;--red:#b3261e;--redw:#fdf4f3;--redl:#edc7c3;
+--slate:#1f5e8c;--slatew:#eef4f9;--slatel:#c3d9e8;}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--wash);color:var(--ink);
+ font:15px/1.6 "IBM Plex Sans",-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.015em}
+code,.mono{font-family:ui-monospace,Consolas,monospace}
+.top{background:var(--paper);border-bottom:1px solid var(--line)}
+.topin{max-width:940px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{font-weight:600}
+.badge{font-size:11.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--line2);color:var(--ink2)}
+.badge.ok{border-color:var(--greenl);background:var(--greenw);color:var(--green)}
+.page{max-width:940px;margin:0 auto;padding:0 20px}
+.intro{padding:30px 0 20px}
+.intro h1{font-size:24px}
+.intro p{color:var(--ink2);margin:8px 0 0;max-width:68ch}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:20px;margin-bottom:16px}
+.card h2{font-size:15px;margin-bottom:14px}
+label{display:block;font-size:13px;font-weight:500;margin-bottom:5px}
+select,input{width:100%;font:inherit;font-size:14.5px;padding:9px 11px;height:40px;
+ border:1px solid var(--line2);border-radius:6px;background:var(--paper);color:var(--ink)}
+select:focus,input:focus{outline:0;border-color:var(--green);box-shadow:0 0 0 3px var(--greenw)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:13px}
+.btn{font:inherit;font-size:15px;font-weight:500;padding:11px 24px;border-radius:6px;
+ border:1px solid var(--green);background:var(--green);color:#fff;cursor:pointer;margin-top:18px}
+.btn:hover{background:#0a5439}
+.btn.ghost{background:var(--paper);color:var(--ink);border-color:var(--line2);margin-left:8px}
+.hint{font-size:12.5px;color:var(--ink3);margin-top:8px}
+.ans{border-radius:8px;padding:22px;margin-bottom:16px;border:1px solid var(--line);background:var(--paper);border-left:4px solid var(--ink3)}
+.ans .st{font-size:11.5px;letter-spacing:.06em;font-weight:600}
+.ans h2{font-size:26px;margin:8px 0 0;line-height:1.2}
+.ans p{color:var(--ink2);margin:10px 0 0;max-width:66ch}
+.ans.MATCHED{border-left-color:var(--green)} .ans.MATCHED .st,.ans.MATCHED h2{color:var(--green)}
+.ans.MULTIPLE_APPLICABLE{border-left-color:var(--amber)} .ans.MULTIPLE_APPLICABLE .st,.ans.MULTIPLE_APPLICABLE h2{color:var(--amber)}
+.ans.DUAL_REPORTING_REQUIRED{border-left-color:var(--slate)} .ans.DUAL_REPORTING_REQUIRED .st,.ans.DUAL_REPORTING_REQUIRED h2{color:var(--slate)}
+.ans.INSUFFICIENT_DATA{border-left-color:var(--ink3)} .ans.INSUFFICIENT_DATA h2{color:var(--ink2)}
+.ans.VALIDATION_FAILED,.ans.NO_RULESET{border-left-color:var(--red)} .ans.VALIDATION_FAILED .st,.ans.VALIDATION_FAILED h2,.ans.NO_RULESET h2{color:var(--red)}
+.meth{border:1px solid var(--line);border-radius:6px;padding:12px 14px;margin-top:10px;background:var(--paper)}
+.meth b{font-size:14.5px}
+.meth .r{font-size:12px;color:var(--ink3);font-family:ui-monospace,Consolas,monospace}
+.quote{margin-top:10px;padding:12px 14px;background:var(--greenw);border-radius:6px;font-size:13.5px;line-height:1.6}
+.quote .src{display:block;margin-top:8px;font-size:12px;color:var(--ink2)}
+.facts{display:flex;flex-wrap:wrap;gap:0;margin-top:18px;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.fact{flex:1 1 160px;padding:11px 14px;border-right:1px solid var(--line)}
+.fact:last-child{border-right:0}
+.fact span{display:block;font-size:11.5px;color:var(--ink3)}
+.fact b{font-size:13.5px;font-family:ui-monospace,Consolas,monospace;font-weight:500}
+ul.errs{margin:12px 0 0;padding-left:18px;font-size:14px;color:var(--ink2)}
+details{margin-top:14px}summary{cursor:pointer;font-size:13.5px;color:var(--ink2)}
+pre{background:var(--wash);border:1px solid var(--line);border-radius:6px;padding:12px;
+ font-size:12px;overflow:auto;max-height:340px;margin-top:10px}
+footer{border-top:1px solid var(--line);background:var(--paper);margin-top:34px;padding:22px 0 36px}
+footer p{max-width:940px;margin:0 auto;padding:0 20px;font-size:12.5px;color:var(--ink3)}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="topin">
+  <span class="brand">SustainGHG — Methodology Decision Service</span>
+  <span class="badge ok" id="b-model">no model in request path</span>
+  <span class="badge" id="b-ruleset">loading…</span>
+  <span class="badge mono" id="b-hash"></span>
+</div></header>
+
+<main><div class="page">
+  <div class="intro">
+    <h1>Which method does the governed ruleset say to use?</h1>
+    <p>Pick an activity and fill in what you hold. Every answer comes from a
+       published, hashed ruleset — no model is involved. When the standards
+       establish no preference between applicable methods, this says so rather
+       than choosing one.</p>
+  </div>
+
+  <div class="card">
+    <h2>Activity record</h2>
+    <div class="grid">
+      <div><label for="cat">Activity</label><select id="cat"></select></div>
+      <div><label for="yr">Reporting year</label><input id="yr" value="2026"></div>
+      <div><label for="cc">Country</label><input id="cc" value="India"></div>
+    </div>
+    <div style="margin-top:18px"><label>What you hold</label>
+      <div class="grid" id="fields"></div>
+      <p class="hint">Leave anything blank and it is treated as unknown. Nothing is assumed.</p>
+    </div>
+    <button class="btn" id="go">Decide</button>
+    <button class="btn ghost" id="ex">Load an ambiguous example</button>
+  </div>
+
+  <div id="out"></div>
+</div></main>
+
+<footer><p>Decisions are appended to an append-only audit trail with the input
+fingerprint, ruleset version and engine version — enough to replay any of them
+later and prove it still reproduces.</p></footer>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+let CAT={},FIELDS={};
+
+const TITLE={MATCHED:'',MULTIPLE_APPLICABLE:'More than one method applies',
+ DUAL_REPORTING_REQUIRED:'Both figures are required',
+ INSUFFICIENT_DATA:'Not enough data for any method',
+ VALIDATION_FAILED:'The record cannot be read',
+ NO_RULESET:'No approved rules for that activity'};
+
+fetch('v1/ruleset').then(r=>r.json()).then(d=>{
+  $('#b-ruleset').textContent='ruleset '+d.ruleset_version;
+  $('#b-hash').textContent=String(d.snapshot_sha256||'').slice(0,12);
+  $('#b-hash').title='snapshot sha256 '+d.snapshot_sha256;
+});
+
+fetch('v1/catalogue').then(r=>r.json()).then(d=>{
+  FIELDS=d.fields;
+  const sel=$('#cat');
+  d.categories.forEach(c=>{CAT[c.id]=c;
+    const o=document.createElement('option');o.value=c.id;o.textContent=c.label;sel.appendChild(o);});
+  sel.value='mobileCombustion' in CAT?'mobileCombustion':d.categories[0].id;
+  sel.onchange=renderFields; renderFields();
+});
+
+function renderFields(){
+  const c=CAT[$('#cat').value], host=$('#fields'); host.innerHTML='';
+  c.fields.forEach(f=>{
+    const fd=FIELDS[f]; if(!fd) return;
+    const wrap=document.createElement('div');
+    const lab=document.createElement('label'); lab.textContent=fd.label; lab.htmlFor='f-'+f;
+    wrap.appendChild(lab);
+    let el;
+    if(fd.options&&fd.options.length){
+      el=document.createElement('select');
+      el.appendChild(new Option('— not provided —',''));
+      const opts=(c.fieldOptions&&c.fieldOptions[f])||fd.options;
+      opts.forEach(o=>el.appendChild(new Option(o,o)));
+    } else { el=document.createElement('input'); el.placeholder=fd.kind==='number'?'0':''; }
+    el.id='f-'+f; el.dataset.field=f;
+    wrap.appendChild(el);
+    if(fd.unitOf&&FIELDS[fd.unitOf]){
+      const u=document.createElement('select'); u.id='f-'+fd.unitOf; u.dataset.field=fd.unitOf;
+      u.style.marginTop='6px';
+      u.appendChild(new Option('— unit —',''));
+      ((c.fieldOptions&&c.fieldOptions[fd.unitOf])||FIELDS[fd.unitOf].options||[])
+        .forEach(o=>u.appendChild(new Option(o,o)));
+      wrap.appendChild(u);
+    }
+    host.appendChild(wrap);
+  });
+}
+
+$('#ex').onclick=()=>{
+  $('#cat').value='mobileCombustion'; renderFields();
+  setTimeout(()=>{ // fuel AND odometer: several methods apply, none ordered
+    const set=(f,v)=>{const e=$('#f-'+f); if(e) e.value=v;};
+    set('fuelQuantity','64'); set('fuelUnit','litre'); set('fuelType','Diesel');
+    set('distance','820'); set('distanceUnit','km'); set('mode','Road — Car (Diesel)');
+  },30);
+};
+
+$('#go').onclick=async()=>{
+  const inputs={reportingYear:$('#yr').value,country:$('#cc').value};
+  document.querySelectorAll('#fields [data-field]').forEach(e=>{
+    if(String(e.value).trim()) inputs[e.dataset.field]=e.value;});
+  const body={record_id:'ui-'+Date.now(),category:$('#cat').value,inputs};
+  $('#out').innerHTML='<div class="card">Deciding…</div>';
+  const d=await (await fetch('v1/methodology:predict',{method:'POST',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();
+  render(d,body);
+};
+
+function methBlock(m){
+  const e=m.evidence||{};
+  return `<div class="meth"><b>${esc(m.methodology_name||m.methodology)}</b>
+    <span class="r">  ${esc(m.rule||'')}</span>
+    ${e.document?`<div class="quote">${e.passage?'“'+esc(e.passage.slice(0,340))+'…”':esc(e.quote||'')}
+      <span class="src">${esc(e.document)} · ${esc(e.edition||'')} · ${esc(e.page||'')}</span></div>`:''}
+  </div>`;
+}
+
+function render(d,sent){
+  const st=d.status;
+  let head='';
+  if(st==='MATCHED'){
+    head=`<div class="st">USE THE</div><h2>${esc(d.methodology_name)}</h2>
+      ${d.evidence&&d.evidence.document?`<div class="quote">
+        ${d.evidence.passage?'“'+esc(d.evidence.passage.slice(0,420))+'…”':esc(d.evidence.quote||'')}
+        <span class="src">${esc(d.evidence.document)} · ${esc(d.evidence.edition||'')} · ${esc(d.evidence.page||'')}</span>
+      </div>`:'<p>This rule carries no cited passage: its rank was inherited, not evidenced.</p>'}`;
+  } else if(st==='MULTIPLE_APPLICABLE'||st==='DUAL_REPORTING_REQUIRED'){
+    head=`<div class="st">${esc(st.replace(/_/g,' '))}</div><h2>${esc(TITLE[st])}</h2>
+      <p>${esc(d.reason||'')}</p>
+      ${(d.applicable||[]).map(methBlock).join('')}
+      ${d.resolution?`<p>${esc(d.resolution)}</p>`:''}`;
+  } else if(st==='VALIDATION_FAILED'){
+    head=`<div class="st">${esc(st.replace(/_/g,' '))}</div><h2>${esc(TITLE[st])}</h2>
+      <ul class="errs">${(d.errors||[]).map(e=>'<li>'+esc(e)+'</li>').join('')}</ul>`;
+  } else {
+    head=`<div class="st">${esc(st.replace(/_/g,' '))}</div><h2>${esc(TITLE[st]||st)}</h2>
+      ${(d.gaps||[]).length?'<p>Supply any one of these sets:</p>'+
+        (d.gaps||[]).map(g=>`<div class="meth"><b>${esc(g.methodology)}</b>
+          <span class="r">  add ${esc((g.missing||[]).map(f=>(FIELDS[f]||{}).label||f).join(', '))}</span></div>`).join(''):''}`;
+  }
+
+  $('#out').innerHTML=`<div class="ans ${esc(st)}">${head}
+    <div class="facts">
+      <div class="fact"><span>ruleset</span><b>${esc(d.ruleset_version||'—')}</b></div>
+      <div class="fact"><span>engine</span><b>${esc(d.engine_version||'—')}</b></div>
+      <div class="fact"><span>input fingerprint</span><b>${esc(d.input_fingerprint||'—')}</b></div>
+      <div class="fact"><span>matched rule</span><b>${esc(d.matched_rule||'—')}</b></div>
+    </div>
+    <details><summary>Full response and the record as sent</summary>
+      <pre>${esc(JSON.stringify({sent,received:d},null,2))}</pre></details>
+  </div>`;
+}
+</script>
+</body>
+</html>
