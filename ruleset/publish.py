@@ -94,6 +94,9 @@ def build_snapshot(con, version: str) -> dict:
                 "source": {"document": r["source_document"],
                            "edition": r["source_edition"],
                            "page": r["source_page"],
+                           # carried so the evidence bundle can resolve the
+                           # full passage at publish time
+                           "chunk_id": r["source_chunk_id"],
                            "quote": r["evidence_quote"]},
             })
         cats.append({
@@ -114,6 +117,50 @@ def build_snapshot(con, version: str) -> dict:
         "methodologies": methods,
         "categories": cats,
     }
+
+
+def build_evidence(con, version: str, snap: dict) -> dict:
+    """The cited passages, in full, keyed by chunk id.
+
+    Read from the knowledge store at publish time and frozen. After this the
+    execution plane needs nothing but the snapshot and this file.
+    """
+    wanted = {}
+    for c in snap["categories"]:
+        for r in c["rules"]:
+            cid = r.get("source", {}).get("chunk_id") if r.get("source") else None
+            if cid:
+                wanted[cid] = r["rule_id"]
+    passages = {}
+    if wanted:
+        import sys as _sys
+        from pathlib import Path as _P
+        _sys.path.insert(0, str(_P(__file__).resolve().parents[1] / "knowledge" / "ingest"))
+        try:
+            from common import connect as kb_connect
+            kb = kb_connect()
+            marks = ",".join("?" * len(wanted))
+            for row in kb.execute(
+                    f"SELECT c.chunk_id, c.text, c.page_start, c.page_end, s.path, "
+                    f"d.title, d.edition, d.year FROM chunks c "
+                    f"LEFT JOIN sections s ON s.section_id=c.section_id "
+                    f"JOIN documents d ON d.doc_id=c.doc_id "
+                    f"WHERE c.chunk_id IN ({marks})", list(wanted)):
+                passages[row["chunk_id"]] = {
+                    "document": row["title"], "edition": row["edition"],
+                    "year": row["year"], "section": row["path"],
+                    "pages": (f"p{row['page_start']}"
+                              if row["page_start"] == row["page_end"]
+                              else f"pp{row['page_start']}-{row['page_end']}"),
+                    "text": " ".join((row["text"] or "").split()),
+                    "cited_by": wanted[row["chunk_id"]]}
+        except Exception as e:  # knowledge store absent: publish must still work
+            return {"ruleset_version": version, "passages": {},
+                    "warning": f"evidence not bundled: {type(e).__name__}"}
+    missing = sorted(set(wanted) - set(passages))
+    return {"ruleset_version": version, "passages": passages,
+            "cited_chunks": len(wanted), "bundled": len(passages),
+            "missing": missing}
 
 
 def canonical(snapshot: dict) -> str:
@@ -260,6 +307,15 @@ def main() -> int:
                          encoding="utf-8")
     (SNAP_DIR / f"ruleset-{a.version}.tables.js").write_text(
         as_tables_js(out), encoding="utf-8")
+
+    # Evidence travels WITH the ruleset. The execution plane must be able to
+    # return the passage behind a decision without reaching into the vector
+    # index or the corpus, because reaching into either reopens the boundary
+    # the architecture exists to hold. Only chunks a rule actually cites are
+    # included, so this stays small.
+    ev = build_evidence(con, a.version, snap)
+    (SNAP_DIR / f"ruleset-{a.version}.evidence.json").write_text(
+        json.dumps(ev, indent=2, ensure_ascii=False), encoding="utf-8")
 
     con.execute("UPDATE ruleset_version SET status='PUBLISHED', published_at=?, "
                 "published_by=?, snapshot_sha256=? WHERE version=?",

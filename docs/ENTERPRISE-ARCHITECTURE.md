@@ -43,9 +43,39 @@ reproducible, not auditable, and not fast enough at 10k records.
                                               │
   EXECUTION PLANE                 online, pure, deterministic, fast
   ───────────────                             │
-  activity records ─────────────────────────► evaluator ──► decisions
-                                                              + audit
+                          ┌───────────────────┴───────────────────┐
+                          │   PUBLISHED ARTEFACT (self-contained) │
+                          │   rules + the passages they cite      │
+                          └───────────────────┬───────────────────┘
+                                              │
+  activity records ─────────────────────────► evaluator ──► decision
+                                                            + evidence
+                                                            + audit
 ```
+
+**Ingestion feeds this layer continuously; it is not a step inside a request.**
+A new standard is parsed, extracted, reviewed and published — and only then
+does the live engine see it, as a new ruleset version. The runtime connection
+between the document layer and the engine is the *published artefact*, nothing
+else.
+
+**Evidence ships with the ruleset.** `publish.py` bundles the full text of every
+passage a rule cites into `ruleset-<version>.evidence.json`. The execution plane
+can therefore return the passage behind a decision without reaching into the
+corpus or the vector index — reaching into either would reopen the boundary this
+architecture exists to hold. Only cited chunks are included, so the bundle stays
+small.
+
+**Implemented:** `service/server.js`. It requires only Node builtins and is held
+to that by `service/boundary.test.js`, which fails the build if a model client,
+PDF parser, vector index or corpus path ever appears in it. Measured at
+**10,000 records in 112 ms (11.2 µs/record, 669 distinct shapes)** against
+ruleset `2026.09.07`.
+
+It is written in Node rather than Python for one reason: `assets/engine.js` is
+the rule evaluator and it is already tested. A second implementation in another
+language is the most likely way a governed system ends up giving two different
+answers to the same record.
 
 **The boundaries are enforced, not conventional.** The execution service has no
 network access to a model provider, no PDF parser, no vector index, and no
@@ -397,13 +427,13 @@ Tier 1 cases → compare against the authored baseline. `tools/roundtrip.js
 | Requirement | Prototype | Gap |
 | --- | --- | --- |
 | Deterministic execution plane | ✅ pure functions, no DOM, no state | — |
-| No model in request path | ❌ `server/app.py` calls Groq on a cache miss | **Violates §1** |
+| No model in request path | ✅ `service/server.js`; enforced by `boundary.test.js` | — |
 | Ruleset as source of truth | ✅ relational store, versioned, hashed snapshots | — |
 | Immutable published versions | ✅ enforced; a fix requires a new version | — |
 | Applicability ≠ preference | ✅ separate columns; 65 of 70 ranks NULL for want of evidence | — |
 | `MULTIPLE_APPLICABLE` status | ✅ returned when several apply and nothing orders them | — |
 | `DUAL_REPORTING_REQUIRED` | ✅ Scope 2 recorded `all_of`; engine returns both | — |
-| Batch API | ❌ single record | Not built |
+| Batch API | ✅ NDJSON, version-pinned, per-record status | — |
 | Replayable audit | ⚠️ fingerprint exists, no store | Add `prediction_audit` |
 | Quote verification | ✅ V1, rejects before human sees it | — |
 | Controlled field mapping | ⚠️ lexicon, 4/5 on its own tests | Move to a reviewed table |

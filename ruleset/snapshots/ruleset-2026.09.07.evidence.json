@@ -1,0 +1,26 @@
+{
+  "ruleset_version": "2026.09.07",
+  "passages": {
+    "scope3-calculation-guidance-0#c00032": {
+      "document": "Technical Guidance for Calculating Scope 3 Emissions",
+      "edition": "Version 1.0",
+      "year": 2013,
+      "section": "Scope 3 Emissions > Category 1: Purchased Goods and Services > CATEGORY 1 Purchased Goods and Services",
+      "pages": "p33",
+      "text": "Technical Guidance for Calculating Scope 3 Emissions [33] CATEGORY 1 Purchased Goods and Services Spend-based method If the supplier-specific method, hybrid method, and average-data method are not feasible (e.g., due to data limitations), companies should apply the average spend-based method by collecting data on the economic value of purchased goods and services and multiplying them by the relevant EEIO emission factors. Refer to the “Secondary data sources” in the Introduction for further guidance on EEIO data. Companies may use a combination of the material-based method and spend-based method by using both process- based and EEIO data for various purchased goods and services. Activity data needed •• Amount spent on purchased goods or services, by product type, using market values (e.g., dollars) •• Where applicable, inflation data to convert market values between the year of the EEIO emissions factors and the year of the activity data. Emission factors needed •• Cradle-to-gate emission factors of the purchased goods or services per unit of economic value (e.g., kg CO2e/$). Data collection guidance Data sources for activity data include: •• Internal data systems (e.g., enterprise resource planning (ERP) systems) •• Bill of materials •• Purchasing records. Data sources for emission factors include: •• Environmentally-extended input-output (EEIO) databases •• Industry associations. Calculation formula [1.5] Spend-based method CO2e emissions for purchased goods or services = sum across purchased goods or services: ∑ (value of purchased good or service ($) × emission factor of purchased good or service per unit of economic value (kg CO2e/$))",
+      "cited_by": "PURCHASED_GOODS__SPEND_BASED__004"
+    },
+    "scope3-calculation-guidance-0#c00064": {
+      "document": "Technical Guidance for Calculating Scope 3 Emissions",
+      "edition": "Version 1.0",
+      "year": 2013,
+      "section": "Scope 3 Emissions > Category 4: Upstream Transportation > = total fuel consumed (liters) x (   mass/volume of company’s goods   ) > CATEGORY 4 Upstream Transportation and Distribution",
+      "pages": "p65",
+      "text": "Technical Guidance for Calculating Scope 3 Emissions [65] CATEGORY 4 Upstream Transportation and Distribution Spend-based method If the fuel-based method and distance method cannot be applied (e.g., due to data limitations), companies should apply the spend-based method to calculate the emissions from transportation. In this method, the amount spent on transportation by type is multiplied by the relevant EEIO emission factors. Refer to “Environmentally-extended input output (EEIO) data” in the Introduction for guidance on EEIO data. Companies may determine the amount spent on transportation through bills, invoice payments, or financial accounting systems. The spend-based method is effective for screening purposes; however it has high levels of uncertainty and the fuel-based and distance-based methods are recommended for accounting for transportation emissions. Activity data needed •• Amount spent on transportation by type (e.g. road, rail, air, barge), using market values (e.g., dollars). Emission factors needed •• Cradle-to-gate emission factors of the transportation type per unit of economic value (e.g., kg CO2e/$) •• Where applicable, inflation data to convert market values between the year of the EEIO emissions factors and the year of the activity data. Data collection guidance Data sources for activity data include: •• Internal data systems (e.g., financial accounting systems) •• Bills •• Invoices. Data sources for emission factors include: •• Environmentally-extended input-output (EEIO) databases. A list of EEIO databases is provided on the GHG Protocol website (http://www.ghgprotocol.org/Third-Party-Databases). Additional databases may be added periodically, so continue to check the website. Calculation formula [4.7] Spend-based method (transportation) CO2e emissions from transportation = sum across transport modes and/or vehicle types: ∑ (amount spent on transportation by type ($) × relevant EEIO emission factors per unit of economic value (kg CO2e/$))",
+      "cited_by": "UPSTREAM_TRANSPORT__SPEND_BASED__004"
+    }
+  },
+  "cited_chunks": 2,
+  "bundled": 2,
+  "missing": []
+}

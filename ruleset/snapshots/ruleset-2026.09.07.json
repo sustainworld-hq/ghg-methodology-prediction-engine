@@ -1,0 +1,2995 @@
+{
+  "ruleset_version": "2026.09.07",
+  "framework": "GHG_PROTOCOL",
+  "notes": "Forked from 2026.09.06. Cited passages bundled with the ruleset so the execution plane needs no corpus and no vector index.",
+  "fields": {
+    "activityCategory": {
+      "label": "Activity Category",
+      "short": "Category",
+      "kind": "select",
+      "dict": "Selects which governed decision table the engine loads. Drives everything downstream.",
+      "context": true
+    },
+    "activityType": {
+      "label": "Activity Type / Template",
+      "short": "Template",
+      "kind": "select",
+      "dict": "Data-entry template within a category. Narrows the expected inputs; does not change rule priority.",
+      "context": true
+    },
+    "assetType": {
+      "label": "Asset Type",
+      "short": "Asset Type",
+      "kind": "select",
+      "dict": "Class of leased or operated asset.",
+      "options": [
+        "Office",
+        "Warehouse",
+        "Retail",
+        "Data centre",
+        "Manufacturing plant",
+        "Vehicle fleet"
+      ]
+    },
+    "contractualInstrument": {
+      "label": "Contractual Instrument",
+      "short": "Contractual Instrument",
+      "kind": "select",
+      "dict": "Energy attribute certificate or contract backing the electricity claim. Required by every market-based rule.",
+      "options": [
+        "I-REC (India)",
+        "REC (United States)",
+        "Guarantee of Origin (EU)",
+        "PPA — Physical",
+        "PPA — Virtual",
+        "Supplier green tariff",
+        "Residual mix (no instrument claimed)"
+      ]
+    },
+    "country": {
+      "label": "Country",
+      "short": "Country",
+      "kind": "select",
+      "dict": "Geography of the activity. Used by rules that require a country-resolved dataset.",
+      "options": [
+        "India",
+        "United States",
+        "United Kingdom",
+        "Germany",
+        "Singapore",
+        "United Arab Emirates",
+        "Australia",
+        "Japan",
+        "Brazil",
+        "Other / Global"
+      ],
+      "context": true
+    },
+    "currency": {
+      "label": "Currency",
+      "short": "Currency",
+      "kind": "select",
+      "dict": "ISO currency of the spend value. A spend without a currency cannot be matched.",
+      "dim": "currency",
+      "options": [
+        "INR",
+        "USD",
+        "EUR",
+        "GBP",
+        "SGD",
+        "AED",
+        "AUD",
+        "JPY",
+        "BRL"
+      ]
+    },
+    "distance": {
+      "label": "Distance",
+      "short": "Distance",
+      "kind": "number",
+      "dict": "Measured or booked travel distance for the activity.",
+      "unitOf": "distanceUnit"
+    },
+    "distanceUnit": {
+      "label": "Distance Unit",
+      "short": "Distance Unit",
+      "kind": "select",
+      "dict": "Unit of the distance value. Must be a distance dimension.",
+      "dim": "distance",
+      "options": [
+        "km",
+        "passenger.km",
+        "tonne.km",
+        "vehicle.km",
+        "miles"
+      ]
+    },
+    "employeeCount": {
+      "label": "Employee Count",
+      "short": "Employees",
+      "kind": "number",
+      "dict": "Headcount in scope for the activity. Supports average-data rules only."
+    },
+    "energyConsumption": {
+      "label": "Energy Consumption",
+      "short": "Energy",
+      "kind": "number",
+      "dict": "Metered energy delivered to the reporting boundary.",
+      "unitOf": "energyUnit"
+    },
+    "energyPerUse": {
+      "label": "Energy per Use (kWh)",
+      "short": "Energy / Use",
+      "kind": "number",
+      "dict": "Measured energy drawn by the product in one use cycle."
+    },
+    "energyUnit": {
+      "label": "Energy Unit",
+      "short": "Energy Unit",
+      "kind": "select",
+      "dict": "Unit of the energy value. Must be an energy dimension.",
+      "dim": "energy",
+      "options": [
+        "kWh",
+        "MWh",
+        "GJ",
+        "MMBtu"
+      ]
+    },
+    "equipmentCharge": {
+      "label": "Equipment Charge Capacity (kg)",
+      "short": "Charge Capacity",
+      "kind": "number",
+      "dict": "Nameplate refrigerant charge of the installed equipment."
+    },
+    "equipmentType": {
+      "label": "Equipment Type",
+      "short": "Equipment Type",
+      "kind": "select",
+      "dict": "Equipment class, used to select a governed default leak rate.",
+      "options": [
+        "Split AC",
+        "Chiller — centrifugal",
+        "VRF system",
+        "Cold storage",
+        "Vehicle air-conditioning",
+        "Process refrigeration"
+      ]
+    },
+    "equipmentUnits": {
+      "label": "Units of Equipment",
+      "short": "Equipment Units",
+      "kind": "number",
+      "dict": "Count of installed units. Supports the simplified screening rule only."
+    },
+    "floorArea": {
+      "label": "Floor Area",
+      "short": "Floor Area",
+      "kind": "number",
+      "dict": "Gross internal area of the asset. Supports floor-area average-data rules.",
+      "unitOf": "floorAreaUnit"
+    },
+    "floorAreaUnit": {
+      "label": "Area Unit",
+      "short": "Area Unit",
+      "kind": "select",
+      "dict": "Unit of the floor area.",
+      "dim": "area",
+      "options": [
+        "m²",
+        "sq.ft"
+      ]
+    },
+    "franchiseType": {
+      "label": "Franchise Type",
+      "short": "Franchise Type",
+      "kind": "select",
+      "dict": "Class of franchised operation.",
+      "options": [
+        "Retail outlet",
+        "Restaurant / QSR",
+        "Hotel",
+        "Service centre"
+      ]
+    },
+    "freightMass": {
+      "label": "Shipment Weight",
+      "short": "Weight",
+      "kind": "number",
+      "dict": "Gross mass of goods moved. Combined with distance it yields tonne-kilometres.",
+      "unitOf": "massUnit"
+    },
+    "fuelQuantity": {
+      "label": "Fuel Quantity",
+      "short": "Fuel Quantity",
+      "kind": "number",
+      "dict": "Volume or mass of fuel purchased or combusted in the period.",
+      "unitOf": "fuelUnit"
+    },
+    "fuelType": {
+      "label": "Fuel Type",
+      "short": "Fuel Type",
+      "kind": "select",
+      "dict": "Fuel product combusted. Without it a fuel quantity cannot be resolved to a methodology.",
+      "options": [
+        "Diesel",
+        "Petrol / Gasoline",
+        "CNG",
+        "LPG",
+        "Jet Kerosene (Jet A-1)",
+        "Aviation Gasoline",
+        "Natural Gas",
+        "Coal — Bituminous",
+        "Furnace Oil / HFO",
+        "Biodiesel (B20)",
+        "Ethanol (E10)"
+      ]
+    },
+    "fuelUnit": {
+      "label": "Fuel Unit",
+      "short": "Fuel Unit",
+      "kind": "select",
+      "dict": "Unit of the fuel quantity. Must be a volume, mass or energy dimension.",
+      "dim": "fuel",
+      "options": [
+        "litre",
+        "kg",
+        "m³",
+        "GJ",
+        "gallon (US)"
+      ]
+    },
+    "gridRegion": {
+      "label": "Grid Region",
+      "short": "Grid Region",
+      "kind": "select",
+      "dict": "Grid balancing area the electricity was drawn from. Required by every location-based rule.",
+      "options": [
+        "Southern Region (SR)",
+        "Northern Region (NR)",
+        "Western Region (WR)",
+        "Eastern Region (ER)",
+        "North-Eastern Region (NER)",
+        "All India (National Grid)",
+        "UK — National Grid",
+        "US — WECC",
+        "US — RFC",
+        "EU — ENTSO-E",
+        "Other"
+      ]
+    },
+    "investeeEmissions": {
+      "label": "Investee Emissions (tCO₂e)",
+      "short": "Investee Emissions",
+      "kind": "number",
+      "dict": "Reported Scope 1+2 of the investee. The only primary-data input for Category 15."
+    },
+    "investeeRevenue": {
+      "label": "Investee Revenue",
+      "short": "Investee Revenue",
+      "kind": "number",
+      "dict": "Investee turnover, used to allocate sector-average intensity.",
+      "unitOf": "currency"
+    },
+    "investmentValue": {
+      "label": "Investment Value",
+      "short": "Investment Value",
+      "kind": "number",
+      "dict": "Carrying value of the equity or debt investment.",
+      "unitOf": "currency"
+    },
+    "leakRate": {
+      "label": "Assumed Leak Rate (%)",
+      "short": "Leak Rate",
+      "kind": "number",
+      "dict": "Governed annual leakage assumption for the equipment class, 0-100%."
+    },
+    "massUnit": {
+      "label": "Weight Unit",
+      "short": "Weight Unit",
+      "kind": "select",
+      "dict": "Unit of a mass value. Must be a mass dimension.",
+      "dim": "mass",
+      "options": [
+        "kg",
+        "tonne",
+        "lb"
+      ]
+    },
+    "materialMass": {
+      "label": "Quantity Purchased",
+      "short": "Quantity",
+      "kind": "number",
+      "dict": "Physical quantity of goods purchased, in mass units.",
+      "unitOf": "massUnit"
+    },
+    "materialType": {
+      "label": "Material / Product Type",
+      "short": "Material",
+      "kind": "select",
+      "dict": "Material classification used to resolve a mass-based average dataset.",
+      "options": [
+        "Steel — primary",
+        "Steel — recycled",
+        "Aluminium",
+        "Cement",
+        "Plastic — PET",
+        "Plastic — HDPE",
+        "Paper & pulp",
+        "Cotton textile",
+        "Glass",
+        "Copper",
+        "Electronics assembly",
+        "Chemicals — generic"
+      ]
+    },
+    "mode": {
+      "label": "Mode",
+      "short": "Mode",
+      "kind": "select",
+      "dict": "Transport mode. Determines which distance-based dataset family applies.",
+      "options": [
+        "Air — Short Haul (<1,600 km)",
+        "Air — Medium Haul",
+        "Air — Long Haul (>3,700 km)",
+        "Rail — Intercity",
+        "Rail — Metro / Suburban",
+        "Road — Car (Petrol)",
+        "Road — Car (Diesel)",
+        "Road — Car (Battery Electric)",
+        "Road — Taxi",
+        "Road — Bus / Coach",
+        "Road — Two-wheeler",
+        "Sea — Ferry"
+      ]
+    },
+    "nights": {
+      "label": "Room Nights",
+      "short": "Nights",
+      "kind": "number",
+      "dict": "Occupied room nights. Primary input for accommodation average-data rules."
+    },
+    "ownershipShare": {
+      "label": "Ownership Share (%)",
+      "short": "Ownership Share",
+      "kind": "number",
+      "dict": "Reporting company share of the investee, 0-100%."
+    },
+    "processInput": {
+      "label": "Raw Material Input (tonne)",
+      "short": "Material Input",
+      "kind": "number",
+      "dict": "Mass of carbonate or feedstock entering the process."
+    },
+    "processOutput": {
+      "label": "Process Output (tonne)",
+      "short": "Process Output",
+      "kind": "number",
+      "dict": "Mass of product leaving the industrial process in the period."
+    },
+    "processType": {
+      "label": "Process Type",
+      "short": "Process Type",
+      "kind": "select",
+      "dict": "Industrial process generating non-combustion emissions.",
+      "options": [
+        "Cement — clinker production",
+        "Lime production",
+        "Ammonia production",
+        "Iron & steel — BF/BOF",
+        "Aluminium smelting (PFC)",
+        "Glass production",
+        "Nitric acid production"
+      ]
+    },
+    "processingEnergy": {
+      "label": "Downstream Processing Energy (kWh)",
+      "short": "Processing Energy",
+      "kind": "number",
+      "dict": "Energy consumed by the customer to process the intermediate product sold."
+    },
+    "productType": {
+      "label": "Product Type",
+      "short": "Product Type",
+      "kind": "select",
+      "dict": "Product class, used to resolve average use-phase or end-of-life datasets.",
+      "options": [
+        "Domestic appliance",
+        "Industrial equipment",
+        "Consumer electronics",
+        "Vehicle",
+        "Packaging",
+        "Building material"
+      ]
+    },
+    "refrigerantRecharge": {
+      "label": "Quantity Recharged (kg)",
+      "short": "Recharge Qty",
+      "kind": "number",
+      "dict": "Refrigerant added during servicing in the period. The observed term in a material balance."
+    },
+    "refrigerantType": {
+      "label": "Refrigerant Type",
+      "short": "Refrigerant",
+      "kind": "select",
+      "dict": "Refrigerant gas in the equipment. Required by every fugitive-emission rule.",
+      "options": [
+        "R-410A",
+        "R-134a",
+        "R-32",
+        "R-404A",
+        "R-407C",
+        "R-22 (HCFC)",
+        "R-744 (CO₂)",
+        "R-717 (Ammonia)"
+      ]
+    },
+    "region": {
+      "label": "Region / State",
+      "short": "Region",
+      "kind": "text",
+      "dict": "Sub-national location. Informational unless a rule names it explicitly.",
+      "context": true
+    },
+    "reportingYear": {
+      "label": "Reporting Year",
+      "short": "Year",
+      "kind": "select",
+      "dict": "Inventory year the record belongs to. Must fall inside the open reporting window.",
+      "options": [
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026",
+        "2027"
+      ],
+      "context": true
+    },
+    "sectorCode": {
+      "label": "EEIO Sector",
+      "short": "Sector",
+      "kind": "select",
+      "dict": "Environmentally-extended input-output sector used to interpret a spend value.",
+      "options": [
+        "Air transport",
+        "Land transport & pipelines",
+        "Accommodation & food service",
+        "Machinery & equipment mfg",
+        "Basic metals",
+        "Chemicals & chemical products",
+        "Construction",
+        "Professional services",
+        "Food & beverage mfg",
+        "IT & telecom services",
+        "Financial services"
+      ]
+    },
+    "spend": {
+      "label": "Spend",
+      "short": "Spend",
+      "kind": "number",
+      "dict": "Procurement value of the activity, net of taxes. Lowest-priority input in every table that accepts it.",
+      "unitOf": "currency"
+    },
+    "steamSource": {
+      "label": "Supplier Emission Rate",
+      "short": "Supplier Rate",
+      "kind": "select",
+      "dict": "Basis on which the steam, heat or cooling supplier reports its emission intensity.",
+      "options": [
+        "Supplier-published emission rate",
+        "Metered supplier data",
+        "Default grid / heat factor"
+      ]
+    },
+    "supplierData": {
+      "label": "Supplier Data",
+      "short": "Supplier Data",
+      "kind": "select",
+      "dict": "Primary data received from the supplier. Outranks every generic dataset when present.",
+      "options": [
+        "Verified supplier product footprint (PCF)",
+        "Unverified supplier product footprint",
+        "Supplier Scope 1+2 with allocation"
+      ]
+    },
+    "treatmentMethod": {
+      "label": "Treatment Method",
+      "short": "Treatment",
+      "kind": "select",
+      "dict": "Disposal or recovery route applied to the waste stream.",
+      "options": [
+        "Landfill",
+        "Recycling (closed-loop)",
+        "Recycling (open-loop)",
+        "Composting",
+        "Anaerobic digestion",
+        "Incineration — with energy recovery",
+        "Incineration — no energy recovery",
+        "Wastewater treatment"
+      ]
+    },
+    "unitsSold": {
+      "label": "Units Sold",
+      "short": "Units Sold",
+      "kind": "number",
+      "dict": "Count of products sold in the reporting period."
+    },
+    "usesPerLifetime": {
+      "label": "Uses per Lifetime",
+      "short": "Lifetime Uses",
+      "kind": "number",
+      "dict": "Governed assumption for total use cycles over the product lifetime."
+    },
+    "wasteQuantity": {
+      "label": "Waste Quantity",
+      "short": "Waste Quantity",
+      "kind": "number",
+      "dict": "Mass or volume of waste transferred off site.",
+      "unitOf": "wasteUnit"
+    },
+    "wasteType": {
+      "label": "Waste Type",
+      "short": "Waste Type",
+      "kind": "select",
+      "dict": "Waste stream composition. Required for the waste-type-specific methodology.",
+      "options": [
+        "Mixed municipal waste",
+        "Paper & cardboard",
+        "Plastics (mixed)",
+        "Food & organic",
+        "Metals",
+        "Glass",
+        "WEEE / e-waste",
+        "Hazardous chemical",
+        "Construction & demolition",
+        "Wastewater sludge"
+      ]
+    },
+    "wasteUnit": {
+      "label": "Waste Unit",
+      "short": "Waste Unit",
+      "kind": "select",
+      "dict": "Unit of the waste quantity.",
+      "dim": "mass",
+      "options": [
+        "kg",
+        "tonne",
+        "m³"
+      ]
+    },
+    "waterService": {
+      "label": "Water Service",
+      "short": "Water Service",
+      "kind": "select",
+      "dict": "Which municipal service the volume relates to. Supply and treatment carry different datasets.",
+      "options": [
+        "Supply only",
+        "Treatment only",
+        "Supply + Treatment"
+      ]
+    },
+    "waterUnit": {
+      "label": "Water Unit",
+      "short": "Water Unit",
+      "kind": "select",
+      "dict": "Unit of the water volume.",
+      "dim": "volume",
+      "options": [
+        "m³",
+        "kL",
+        "litre"
+      ]
+    },
+    "waterVolume": {
+      "label": "Water Volume",
+      "short": "Water Volume",
+      "kind": "number",
+      "dict": "Volume of water supplied to or discharged from the boundary.",
+      "unitOf": "waterUnit"
+    },
+    "workingDays": {
+      "label": "Working Days",
+      "short": "Working Days",
+      "kind": "number",
+      "dict": "Commuting days in the period. Optional refinement on distance-based commuting."
+    }
+  },
+  "methodologies": {
+    "ASSET_SPEC": {
+      "name": "Asset-specific",
+      "tier": "Primary",
+      "confidence": "High",
+      "blurb": "Uses metered energy for the specific asset.",
+      "source_ref": "Corporate Standard p.31",
+      "source_verified": true
+    },
+    "AVG_DATA": {
+      "name": "Average-data",
+      "tier": "Secondary",
+      "confidence": "Medium",
+      "blurb": "Applies a governed average intensity to a physical activity driver.",
+      "source_ref": "Policy and Action Standard Table 8.5, p.85",
+      "source_verified": true
+    },
+    "AVG_MASS": {
+      "name": "Average-data (mass)",
+      "tier": "Secondary",
+      "confidence": "Medium",
+      "blurb": "Applies a material cradle-to-gate factor to physical quantity.",
+      "source_ref": "Policy and Action Standard Table 8.6, p.87",
+      "source_verified": true
+    },
+    "DIST_BASED": {
+      "name": "Distance-based",
+      "tier": "Primary",
+      "confidence": "High",
+      "blurb": "Applies a mode-specific factor to measured distance.",
+      "source_ref": "Corporate Standard p.44",
+      "source_verified": true
+    },
+    "ECON_ALLOC": {
+      "name": "Economic allocation",
+      "tier": "Secondary",
+      "confidence": "Medium",
+      "blurb": "Allocates sector-average intensity by revenue share.",
+      "source_ref": "Scope 3 Standard Category 15",
+      "source_verified": false
+    },
+    "EEIO": {
+      "name": "Spend-based (EEIO)",
+      "tier": "Proxy",
+      "confidence": "Low",
+      "blurb": "Applies an input-output sector intensity to spend.",
+      "source_ref": "Scope 3 Technical Guidance not held",
+      "source_verified": false
+    },
+    "ENERGY_CONTENT": {
+      "name": "Energy-content-based",
+      "tier": "Primary",
+      "confidence": "High",
+      "blurb": "Converts fuel to energy content before applying a factor.",
+      "source_ref": "Corporate Standard p.44",
+      "source_verified": true
+    },
+    "FLOOR_AREA": {
+      "name": "Floor-area based",
+      "tier": "Secondary",
+      "confidence": "Medium",
+      "blurb": "Applies an asset-class intensity per unit floor area.",
+      "source_ref": "Policy and Action Standard Table 8.6, p.87",
+      "source_verified": true
+    },
+    "FUEL_BASED": {
+      "name": "Fuel-based",
+      "tier": "Primary",
+      "confidence": "High",
+      "blurb": "Applies a fuel-specific factor to metered fuel quantity.",
+      "source_ref": "Corporate Standard p.44",
+      "source_verified": true
+    },
+    "INSUFFICIENT": {
+      "name": "Insufficient Data",
+      "tier": "—",
+      "confidence": "None",
+      "blurb": "No governed rule was satisfied. The engine stops rather than assume.",
+      "source_ref": "Corporate Standard p.44",
+      "source_verified": true
+    },
+    "INVEST_SPEC": {
+      "name": "Investment-specific",
+      "tier": "Primary",
+      "confidence": "High",
+      "blurb": "Allocates reported investee emissions by ownership share.",
+      "source_ref": "Scope 3 Standard Category 15",
+      "source_verified": false
+    },
+    "LOC_BASED": {
+      "name": "Location-based",
+      "tier": "Primary",
+      "confidence": "High",
+      "blurb": "Applies the average grid intensity of the balancing area.",
+      "source_ref": "Corporate Standard p.44",
+      "source_verified": true
+    },
+    "MAT_BALANCE": {
+      "name": "Material-balance",
+      "tier": "Primary",
+      "confidence": "High",
+      "blurb": "Derives fugitive loss from refrigerant actually recharged.",
+      "source_ref": "Corporate Standard p.44",
+      "source_verified": true
+    },
+    "MKT_BASED": {
+      "name": "Market-based",
+      "tier": "Primary",
+      "confidence": "High",
+      "blurb": "Applies the intensity of the contractual instrument claimed.",
+      "source_ref": "Scope 2 Guidance Scope 2 Guidance",
+      "source_verified": false
+    },
+    "NIGHT_BASED": {
+      "name": "Night-based (average data)",
+      "tier": "Secondary",
+      "confidence": "Medium",
+      "blurb": "Applies a country average per occupied room night.",
+      "source_ref": "Scope 3 Technical Guidance not held",
+      "source_verified": false
+    },
+    "PROC_MASS": {
+      "name": "Process mass-balance",
+      "tier": "Primary",
+      "confidence": "High",
+      "blurb": "Derives process emissions from output mass and process chemistry.",
+      "source_ref": "Corporate Standard p.44",
+      "source_verified": true
+    },
+    "PROC_STOICH": {
+      "name": "Stoichiometric (input-based)",
+      "tier": "Primary",
+      "confidence": "High",
+      "blurb": "Derives process emissions from carbonate or feedstock input.",
+      "source_ref": "Corporate Standard p.44",
+      "source_verified": true
+    },
+    "SCREEN_LEAK": {
+      "name": "Screening (leak-rate)",
+      "tier": "Secondary",
+      "confidence": "Medium",
+      "blurb": "Applies a governed leak rate to installed charge.",
+      "source_ref": "Corporate Standard p.43",
+      "source_verified": true
+    },
+    "SCREEN_SIMPLE": {
+      "name": "Simplified screening",
+      "tier": "Proxy",
+      "confidence": "Low",
+      "blurb": "Applies a default charge and leak rate per equipment unit.",
+      "source_ref": "Policy and Action Standard Table 8.5, p.85",
+      "source_verified": true
+    },
+    "SITE_PROC": {
+      "name": "Site-specific processing",
+      "tier": "Primary",
+      "confidence": "High",
+      "blurb": "Uses customer-reported energy to process the intermediate product.",
+      "source_ref": "Scope 3 Standard Category 10",
+      "source_verified": false
+    },
+    "SPEND_BASED": {
+      "name": "Spend-based",
+      "tier": "Proxy",
+      "confidence": "Low",
+      "blurb": "Applies a monetary intensity to procurement value. Screening quality only.",
+      "source_ref": "Scope 3 Technical Guidance not held",
+      "source_verified": false
+    },
+    "SUPPLIER_SPEC": {
+      "name": "Supplier-specific",
+      "tier": "Primary",
+      "confidence": "High",
+      "blurb": "Uses primary data reported by the supplier for the purchased item.",
+      "source_ref": "Corporate Standard p.44",
+      "source_verified": true
+    },
+    "TD_LOSS": {
+      "name": "T&D loss-based",
+      "tier": "Primary",
+      "confidence": "High",
+      "blurb": "Applies grid transmission and distribution loss rates to energy imported.",
+      "source_ref": "Corporate Standard p.31",
+      "source_verified": true
+    },
+    "USE_DIRECT": {
+      "name": "Direct use-phase",
+      "tier": "Primary",
+      "confidence": "High",
+      "blurb": "Models lifetime energy of sold products against a grid intensity.",
+      "source_ref": "Scope 3 Standard Category 11",
+      "source_verified": false
+    },
+    "USE_FUEL": {
+      "name": "Use-phase fuel-based",
+      "tier": "Primary",
+      "confidence": "High",
+      "blurb": "Models lifetime fuel combustion of sold products.",
+      "source_ref": "Scope 3 Standard Category 11",
+      "source_verified": false
+    },
+    "VEH_DIST": {
+      "name": "Vehicle-distance",
+      "tier": "Primary",
+      "confidence": "High",
+      "blurb": "Applies a vehicle-kilometre factor where load is unknown.",
+      "source_ref": "Policy and Action Standard Table 8.6, p.87",
+      "source_verified": true
+    },
+    "VOL_WATER": {
+      "name": "Volume-based",
+      "tier": "Primary",
+      "confidence": "High",
+      "blurb": "Applies supply or treatment factors to metered water volume.",
+      "source_ref": "Corporate Standard p.43",
+      "source_verified": true
+    },
+    "WASTE_TREAT": {
+      "name": "Treatment-specific",
+      "tier": "Secondary",
+      "confidence": "Medium",
+      "blurb": "Applies an average-composition factor for the treatment route.",
+      "source_ref": "Policy and Action Standard Table 8.6, p.87",
+      "source_verified": true
+    },
+    "WASTE_TYPE": {
+      "name": "Waste-type-specific",
+      "tier": "Primary",
+      "confidence": "High",
+      "blurb": "Applies a factor resolved from both waste stream and treatment route.",
+      "source_ref": "Policy and Action Standard Table 8.6, p.87",
+      "source_verified": true
+    },
+    "WTT_FUEL": {
+      "name": "Upstream fuel (well-to-tank)",
+      "tier": "Primary",
+      "confidence": "High",
+      "blurb": "Applies an upstream extraction and refining factor to fuel purchased.",
+      "source_ref": "Corporate Standard p.31",
+      "source_verified": true
+    },
+    "WT_DIST": {
+      "name": "Weight-distance",
+      "tier": "Primary",
+      "confidence": "High",
+      "blurb": "Applies a tonne-kilometre factor to mass moved over distance.",
+      "source_ref": "Scope 3 Technical Guidance not held",
+      "source_verified": false
+    }
+  },
+  "categories": [
+    {
+      "category": "BUSINESS_TRAVEL",
+      "legacy_id": "businessTravel",
+      "label": "Business Travel",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 3",
+      "framework_ref": "Category 6",
+      "templates": [
+        "Air Travel",
+        "Rail Travel",
+        "Road Travel",
+        "Company Vehicle",
+        "Taxi & Ride-hail"
+      ],
+      "fields": [
+        "distance",
+        "mode",
+        "fuelQuantity",
+        "fuelType",
+        "spend"
+      ],
+      "fieldOptions": {},
+      "rules": [
+        {
+          "rule_id": "BUSINESS_TRAVEL__DIST_BASED__001",
+          "methodology": "DIST_BASED",
+          "requires": [
+            "distance",
+            "mode"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Itinerary distance from the travel management company is the reference method.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "BUSINESS_TRAVEL__FUEL_BASED__002",
+          "methodology": "FUEL_BASED",
+          "requires": [
+            "fuelQuantity",
+            "fuelType"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Applies to grey-fleet and company vehicles reimbursed on fuel.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "BUSINESS_TRAVEL__SPEND_BASED__003",
+          "methodology": "SPEND_BASED",
+          "requires": [
+            "spend",
+            "currency"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Expense-system fallback where no itinerary is captured.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        }
+      ]
+    },
+    {
+      "category": "CAPITAL_GOODS",
+      "legacy_id": "capitalGoods",
+      "label": "Capital Goods",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 3",
+      "framework_ref": "Category 2",
+      "templates": [
+        "Plant & Machinery",
+        "Buildings",
+        "Vehicles",
+        "IT Hardware"
+      ],
+      "fields": [
+        "supplierData",
+        "materialMass",
+        "materialType",
+        "spend",
+        "sectorCode"
+      ],
+      "fieldOptions": {},
+      "rules": [
+        {
+          "rule_id": "CAPITAL_GOODS__AVG_MASS__002",
+          "methodology": "AVG_MASS",
+          "requires": [
+            "materialMass",
+            "materialType"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Mass-based factor for the dominant construction material.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "CAPITAL_GOODS__EEIO__003",
+          "methodology": "EEIO",
+          "requires": [
+            "spend",
+            "currency",
+            "sectorCode"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Capitalised value screened against a sector intensity. Not amortised.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "CAPITAL_GOODS__SUPPLIER_SPEC__001",
+          "methodology": "SUPPLIER_SPEC",
+          "requires": [
+            "supplierData",
+            "materialMass"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Manufacturer-issued footprint for the asset acquired.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        }
+      ]
+    },
+    {
+      "category": "DOWNSTREAM_LEASED",
+      "legacy_id": "downstreamLeased",
+      "label": "Downstream Leased Assets",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 3",
+      "framework_ref": "Category 13",
+      "templates": [
+        "Leased-out Office",
+        "Leased-out Equipment",
+        "Leased-out Vehicle"
+      ],
+      "fields": [
+        "energyConsumption",
+        "gridRegion",
+        "floorArea",
+        "assetType",
+        "spend"
+      ],
+      "fieldOptions": {},
+      "rules": [
+        {
+          "rule_id": "DOWNSTREAM_LEASED__ASSET_SPEC__001",
+          "methodology": "ASSET_SPEC",
+          "requires": [
+            "energyConsumption",
+            "gridRegion"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Metered consumption reported by the lessee.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "DOWNSTREAM_LEASED__FLOOR_AREA__002",
+          "methodology": "FLOOR_AREA",
+          "requires": [
+            "floorArea",
+            "assetType"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Asset-class intensity per unit area let.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "DOWNSTREAM_LEASED__SPEND_BASED__003",
+          "methodology": "SPEND_BASED",
+          "requires": [
+            "spend",
+            "currency"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Lease income as an allocation driver. Screening only.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        }
+      ]
+    },
+    {
+      "category": "DOWNSTREAM_TRANSPORT",
+      "legacy_id": "downstreamTransport",
+      "label": "Downstream Transportation & Distribution",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 3",
+      "framework_ref": "Category 9",
+      "templates": [
+        "Outbound Freight",
+        "Retail Distribution",
+        "Last-mile Delivery"
+      ],
+      "fields": [
+        "freightMass",
+        "distance",
+        "mode",
+        "fuelQuantity",
+        "fuelType",
+        "spend"
+      ],
+      "fieldOptions": {
+        "mode": [
+          "Road — LGV (<3.5t)",
+          "Road — HGV (>7.5t)",
+          "Rail — Freight",
+          "Sea — Container Ship",
+          "Air — Freight",
+          "Inland Waterway"
+        ],
+        "distanceUnit": [
+          "km",
+          "tonne.km",
+          "vehicle.km",
+          "miles"
+        ]
+      },
+      "rules": [
+        {
+          "rule_id": "DOWNSTREAM_TRANSPORT__FUEL_BASED__002",
+          "methodology": "FUEL_BASED",
+          "requires": [
+            "fuelQuantity",
+            "fuelType"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Carrier-disclosed fuel for your consignments.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "DOWNSTREAM_TRANSPORT__VEH_DIST__003",
+          "methodology": "VEH_DIST",
+          "requires": [
+            "distance",
+            "mode"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Vehicle-kilometre where despatch weight is unrecorded.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "DOWNSTREAM_TRANSPORT__WT_DIST__001",
+          "methodology": "WT_DIST",
+          "requires": [
+            "freightMass",
+            "distance",
+            "mode"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Tonne-kilometre from despatch records.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "DOWNSTREAM_TRANSPORT__SPEND_BASED__004",
+          "methodology": "SPEND_BASED",
+          "requires": [
+            "spend",
+            "currency"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": 4,
+          "preference_basis": "EXPLICIT_STANDARD_GUIDANCE",
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Outbound logistics spend. Screening only.",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "page": "p65",
+            "chunk_id": "scope3-calculation-guidance-0#c00064",
+            "quote": "Technical Guidance for Calculating Scope 3 Emissions [65] CATEGORY 4 Upstream Transportation and Distribution Spend-based method If the fuel-based method and distance method cannot be applied (e.g., due to data limitations), companies should apply the spend-based method to calculate the emissions from transportation."
+          }
+        }
+      ]
+    },
+    {
+      "category": "EMPLOYEE_COMMUTING",
+      "legacy_id": "employeeCommuting",
+      "label": "Employee Commuting",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 3",
+      "framework_ref": "Category 7",
+      "templates": [
+        "Commute Survey",
+        "Shuttle Service",
+        "Remote Working"
+      ],
+      "fields": [
+        "distance",
+        "mode",
+        "workingDays",
+        "fuelQuantity",
+        "fuelType",
+        "employeeCount"
+      ],
+      "fieldOptions": {},
+      "rules": [
+        {
+          "rule_id": "EMPLOYEE_COMMUTING__AVG_DATA__003",
+          "methodology": "AVG_DATA",
+          "requires": [
+            "employeeCount",
+            "country"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "National commuting average per employee where no survey was run.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "EMPLOYEE_COMMUTING__DIST_BASED__001",
+          "methodology": "DIST_BASED",
+          "requires": [
+            "distance",
+            "mode"
+          ],
+          "optional": [
+            "workingDays"
+          ],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Survey distance by mode. Working days scale the annual total.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "EMPLOYEE_COMMUTING__FUEL_BASED__002",
+          "methodology": "FUEL_BASED",
+          "requires": [
+            "fuelQuantity",
+            "fuelType"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Applies to company-operated shuttles with fuel records.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        }
+      ]
+    },
+    {
+      "category": "END_OF_LIFE",
+      "legacy_id": "endOfLife",
+      "label": "End-of-Life Treatment of Sold Products",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 3",
+      "framework_ref": "Category 12",
+      "templates": [
+        "Packaging Disposal",
+        "Product Disposal",
+        "WEEE Take-back"
+      ],
+      "fields": [
+        "materialMass",
+        "materialType",
+        "treatmentMethod",
+        "unitsSold",
+        "productType"
+      ],
+      "fieldOptions": {},
+      "rules": [
+        {
+          "rule_id": "END_OF_LIFE__AVG_DATA__003",
+          "methodology": "AVG_DATA",
+          "requires": [
+            "unitsSold",
+            "productType"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Per-unit disposal average where bill-of-materials mass is unavailable.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "END_OF_LIFE__WASTE_TREAT__002",
+          "methodology": "WASTE_TREAT",
+          "requires": [
+            "materialMass",
+            "treatmentMethod"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Average-composition factor for the disposal route.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "END_OF_LIFE__WASTE_TYPE__001",
+          "methodology": "WASTE_TYPE",
+          "requires": [
+            "materialMass",
+            "materialType",
+            "treatmentMethod"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Mass by material with the expected regional disposal route.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        }
+      ]
+    },
+    {
+      "category": "FERA",
+      "legacy_id": "fera",
+      "label": "Fuel & Energy-Related Activities",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 3",
+      "framework_ref": "Category 3",
+      "templates": [
+        "Upstream Fuel (WTT)",
+        "T&D Losses",
+        "Generation of Purchased Electricity"
+      ],
+      "fields": [
+        "fuelQuantity",
+        "fuelType",
+        "energyConsumption",
+        "gridRegion",
+        "spend"
+      ],
+      "fieldOptions": {},
+      "rules": [
+        {
+          "rule_id": "FERA__SPEND_BASED__003",
+          "methodology": "SPEND_BASED",
+          "requires": [
+            "spend",
+            "currency"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Screening only; upstream intensity varies sharply by fuel.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "FERA__TD_LOSS__002",
+          "methodology": "TD_LOSS",
+          "requires": [
+            "energyConsumption",
+            "gridRegion"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Grid losses on electricity already reported in Scope 2.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "FERA__WTT_FUEL__001",
+          "methodology": "WTT_FUEL",
+          "requires": [
+            "fuelQuantity",
+            "fuelType"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Upstream burden of fuels already reported in Scope 1.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        }
+      ]
+    },
+    {
+      "category": "FRANCHISES",
+      "legacy_id": "franchises",
+      "label": "Franchises",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 3",
+      "framework_ref": "Category 14",
+      "templates": [
+        "Franchised Outlet",
+        "Franchised Restaurant",
+        "Franchised Hotel"
+      ],
+      "fields": [
+        "energyConsumption",
+        "gridRegion",
+        "floorArea",
+        "franchiseType",
+        "spend"
+      ],
+      "fieldOptions": {},
+      "rules": [
+        {
+          "rule_id": "FRANCHISES__ASSET_SPEC__001",
+          "methodology": "ASSET_SPEC",
+          "requires": [
+            "energyConsumption",
+            "gridRegion"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Franchisee-reported metered energy.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "FRANCHISES__FLOOR_AREA__002",
+          "methodology": "FLOOR_AREA",
+          "requires": [
+            "floorArea",
+            "franchiseType"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Outlet-class intensity per unit area.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "FRANCHISES__SPEND_BASED__003",
+          "methodology": "SPEND_BASED",
+          "requires": [
+            "spend",
+            "currency"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Franchise revenue as a proxy driver.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        }
+      ]
+    },
+    {
+      "category": "FUGITIVE_REFRIGERANTS",
+      "legacy_id": "fugitiveRefrigerants",
+      "label": "Fugitive Emissions — Refrigerants",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 1",
+      "framework_ref": "Direct — fugitive",
+      "templates": [
+        "Building HVAC",
+        "Cold Chain",
+        "Vehicle Air-conditioning",
+        "Process Refrigeration"
+      ],
+      "fields": [
+        "refrigerantType",
+        "refrigerantRecharge",
+        "equipmentCharge",
+        "leakRate",
+        "equipmentUnits",
+        "equipmentType"
+      ],
+      "fieldOptions": {},
+      "rules": [
+        {
+          "rule_id": "FUGITIVE_REFRIGERANTS__MAT_BALANCE__001",
+          "methodology": "MAT_BALANCE",
+          "requires": [
+            "refrigerantType",
+            "refrigerantRecharge"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Service records showing gas actually added are the highest-quality basis.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "FUGITIVE_REFRIGERANTS__SCREEN_LEAK__002",
+          "methodology": "SCREEN_LEAK",
+          "requires": [
+            "refrigerantType",
+            "equipmentCharge",
+            "leakRate"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Installed charge with a governed leak-rate assumption.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "FUGITIVE_REFRIGERANTS__SCREEN_SIMPLE__003",
+          "methodology": "SCREEN_SIMPLE",
+          "requires": [
+            "refrigerantType",
+            "equipmentUnits",
+            "equipmentType"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Unit count only. Both charge and leak rate come from governed defaults.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        }
+      ]
+    },
+    {
+      "category": "HOTEL_STAY",
+      "legacy_id": "hotelStay",
+      "label": "Hotel Stays & Accommodation",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 3",
+      "framework_ref": "Category 6",
+      "templates": [
+        "Hotel Night",
+        "Serviced Apartment",
+        "Conference Venue"
+      ],
+      "fields": [
+        "nights",
+        "spend"
+      ],
+      "fieldOptions": {},
+      "rules": [
+        {
+          "rule_id": "HOTEL_STAY__NIGHT_BASED__001",
+          "methodology": "NIGHT_BASED",
+          "requires": [
+            "nights",
+            "country"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Country average per occupied room night, the standard accommodation method.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "HOTEL_STAY__SPEND_BASED__002",
+          "methodology": "SPEND_BASED",
+          "requires": [
+            "spend",
+            "currency"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Room spend where night counts are not captured.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        }
+      ]
+    },
+    {
+      "category": "INVESTMENTS",
+      "legacy_id": "investments",
+      "label": "Investments",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 3",
+      "framework_ref": "Category 15",
+      "templates": [
+        "Equity Investment",
+        "Debt Investment",
+        "Project Finance"
+      ],
+      "fields": [
+        "investeeEmissions",
+        "ownershipShare",
+        "investmentValue",
+        "investeeRevenue",
+        "sectorCode"
+      ],
+      "fieldOptions": {},
+      "rules": [
+        {
+          "rule_id": "INVESTMENTS__ECON_ALLOC__002",
+          "methodology": "ECON_ALLOC",
+          "requires": [
+            "investmentValue",
+            "investeeRevenue",
+            "sectorCode"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Revenue-based allocation of sector intensity. PCAF score 4.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "INVESTMENTS__EEIO__003",
+          "methodology": "EEIO",
+          "requires": [
+            "investmentValue",
+            "sectorCode"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Asset-value screening against sector intensity. PCAF score 5.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "INVESTMENTS__INVEST_SPEC__001",
+          "methodology": "INVEST_SPEC",
+          "requires": [
+            "investeeEmissions",
+            "ownershipShare"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Reported investee inventory allocated by equity share. PCAF score 1-2.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        }
+      ]
+    },
+    {
+      "category": "MOBILE_COMBUSTION",
+      "legacy_id": "mobileCombustion",
+      "label": "Mobile Combustion — Owned Fleet",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 1",
+      "framework_ref": "Direct — mobile",
+      "templates": [
+        "Company Car",
+        "Light Commercial Vehicle",
+        "Heavy Goods Vehicle",
+        "Owned Aircraft",
+        "Marine Vessel"
+      ],
+      "fields": [
+        "fuelQuantity",
+        "fuelType",
+        "distance",
+        "mode",
+        "spend"
+      ],
+      "fieldOptions": {
+        "mode": [
+          "Road — Car (Petrol)",
+          "Road — Car (Diesel)",
+          "Road — Car (Battery Electric)",
+          "Road — LGV (<3.5t)",
+          "Road — HGV (>7.5t)",
+          "Road — Two-wheeler",
+          "Air — Owned Aircraft",
+          "Sea — Owned Vessel"
+        ]
+      },
+      "rules": [
+        {
+          "rule_id": "MOBILE_COMBUSTION__DIST_BASED__002",
+          "methodology": "DIST_BASED",
+          "requires": [
+            "distance",
+            "mode",
+            "fuelType"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Odometer distance with a known powertrain.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "MOBILE_COMBUSTION__FUEL_BASED__001",
+          "methodology": "FUEL_BASED",
+          "requires": [
+            "fuelQuantity",
+            "fuelType"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Fuel card and bunker records outrank odometer data for owned assets.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "MOBILE_COMBUSTION__SPEND_BASED__004",
+          "methodology": "SPEND_BASED",
+          "requires": [
+            "spend",
+            "currency"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Fuel spend fallback. Flag for data-quality improvement.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "MOBILE_COMBUSTION__VEH_DIST__003",
+          "methodology": "VEH_DIST",
+          "requires": [
+            "distance",
+            "mode"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Average-vehicle factor where the fuel type is unrecorded.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        }
+      ]
+    },
+    {
+      "category": "PROCESSING_SOLD",
+      "legacy_id": "processingSold",
+      "label": "Processing of Sold Products",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 3",
+      "framework_ref": "Category 10",
+      "templates": [
+        "Intermediate Product",
+        "Bulk Chemical",
+        "Semi-finished Component"
+      ],
+      "fields": [
+        "processingEnergy",
+        "gridRegion",
+        "materialMass",
+        "materialType"
+      ],
+      "fieldOptions": {},
+      "rules": [
+        {
+          "rule_id": "PROCESSING_SOLD__AVG_DATA__002",
+          "methodology": "AVG_DATA",
+          "requires": [
+            "materialMass",
+            "materialType"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Sector-average processing intensity per tonne sold.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "PROCESSING_SOLD__SITE_PROC__001",
+          "methodology": "SITE_PROC",
+          "requires": [
+            "processingEnergy",
+            "gridRegion"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Customer-reported processing energy. Requires a data-sharing agreement.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        }
+      ]
+    },
+    {
+      "category": "PROCESS_EMISSIONS",
+      "legacy_id": "processEmissions",
+      "label": "Industrial Process Emissions",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 1",
+      "framework_ref": "Direct — process",
+      "templates": [
+        "Cement Kiln",
+        "Lime Kiln",
+        "Ammonia Plant",
+        "Steel — BF/BOF",
+        "Aluminium Smelter"
+      ],
+      "fields": [
+        "processType",
+        "processOutput",
+        "processInput",
+        "spend"
+      ],
+      "fieldOptions": {},
+      "rules": [
+        {
+          "rule_id": "PROCESS_EMISSIONS__PROC_MASS__002",
+          "methodology": "PROC_MASS",
+          "requires": [
+            "processType",
+            "processOutput"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Output mass with a governed clinker or product factor.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "PROCESS_EMISSIONS__PROC_STOICH__001",
+          "methodology": "PROC_STOICH",
+          "requires": [
+            "processType",
+            "processInput"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Carbonate input is measured directly and converts stoichiometrically.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        }
+      ]
+    },
+    {
+      "category": "PURCHASED_ELECTRICITY",
+      "legacy_id": "purchasedElectricity",
+      "label": "Purchased Electricity",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 2",
+      "framework_ref": "Indirect — energy",
+      "templates": [
+        "Grid Import — Office",
+        "Grid Import — Plant",
+        "EV Charging",
+        "Data Centre Draw"
+      ],
+      "fields": [
+        "energyConsumption",
+        "gridRegion",
+        "contractualInstrument",
+        "spend"
+      ],
+      "fieldOptions": {},
+      "rules": [
+        {
+          "rule_id": "PURCHASED_ELECTRICITY__LOC_BASED__001",
+          "methodology": "LOC_BASED",
+          "requires": [
+            "energyConsumption",
+            "gridRegion"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "all_of",
+          "selection_basis": "unstated",
+          "note": "Dual reporting requires a location-based figure whenever grid region is known.",
+          "source": {
+            "document": "Scope 2 Guidance",
+            "edition": "Amendment to the Corporate Standard",
+            "page": "section 7.4 Dual reporting",
+            "chunk_id": null,
+            "quote": "This Guidance requires that companies calculate scope 2 in two ways"
+          }
+        },
+        {
+          "rule_id": "PURCHASED_ELECTRICITY__MKT_BASED__002",
+          "methodology": "MKT_BASED",
+          "requires": [
+            "energyConsumption",
+            "contractualInstrument"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "all_of",
+          "selection_basis": "unstated",
+          "note": "Applied when an attribute certificate or contract is evidenced.",
+          "source": {
+            "document": "Scope 2 Guidance",
+            "edition": "Amendment to the Corporate Standard",
+            "page": "section 7.4 Dual reporting",
+            "chunk_id": null,
+            "quote": "This Guidance requires that companies calculate scope 2 in two ways"
+          }
+        },
+        {
+          "rule_id": "PURCHASED_ELECTRICITY__SPEND_BASED__003",
+          "methodology": "SPEND_BASED",
+          "requires": [
+            "spend",
+            "currency",
+            "country"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": 3,
+          "preference_basis": "EXPLICIT_STANDARD_GUIDANCE",
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Tariff-derived estimate. Permitted only for unmetered minor sites.",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "page": "p33",
+            "chunk_id": "scope3-calculation-guidance-0#c00032",
+            "quote": "Technical Guidance for Calculating Scope 3 Emissions [33] CATEGORY 1 Purchased Goods and Services Spend-based method If the supplier-specific method, hybrid method, and average-data method are not feasible (e.g., due to data limitations), companies should apply the average spend-based method by collecting data on the economic value of purchased goods and services and multiplying them by the relevant EEIO emission factors."
+          }
+        }
+      ]
+    },
+    {
+      "category": "PURCHASED_GOODS",
+      "legacy_id": "purchasedGoods",
+      "label": "Purchased Goods & Services",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 3",
+      "framework_ref": "Category 1",
+      "templates": [
+        "Raw Materials",
+        "Components",
+        "Packaging",
+        "Professional Services",
+        "IT Services"
+      ],
+      "fields": [
+        "supplierData",
+        "materialMass",
+        "materialType",
+        "spend",
+        "sectorCode"
+      ],
+      "fieldOptions": {},
+      "rules": [
+        {
+          "rule_id": "PURCHASED_GOODS__AVG_MASS__002",
+          "methodology": "AVG_MASS",
+          "requires": [
+            "materialMass",
+            "materialType"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Cradle-to-gate material factor applied to purchased quantity.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "PURCHASED_GOODS__SUPPLIER_SPEC__001",
+          "methodology": "SUPPLIER_SPEC",
+          "requires": [
+            "supplierData",
+            "materialMass"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "A supplier product footprint outranks every generic dataset.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "PURCHASED_GOODS__EEIO__003",
+          "methodology": "EEIO",
+          "requires": [
+            "spend",
+            "currency",
+            "sectorCode"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": 4,
+          "preference_basis": "EXPLICIT_STANDARD_GUIDANCE",
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Input-output screening. Expect wide uncertainty bands.",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "page": "p33",
+            "chunk_id": "scope3-calculation-guidance-0#c00032",
+            "quote": "Technical Guidance for Calculating Scope 3 Emissions [33] CATEGORY 1 Purchased Goods and Services Spend-based method If the supplier-specific method, hybrid method, and average-data method are not feasible (e.g., due to data limitations), companies should apply the average spend-based method by collecting data on the economic value of purchased goods and services and multiplying them by the relevant EEIO emission factors."
+          }
+        },
+        {
+          "rule_id": "PURCHASED_GOODS__SPEND_BASED__004",
+          "methodology": "SPEND_BASED",
+          "requires": [
+            "spend",
+            "currency"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": 4,
+          "preference_basis": "EXPLICIT_STANDARD_GUIDANCE",
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Un-sectored spend. Lowest-quality permitted outcome in this table.",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "page": "p33",
+            "chunk_id": "scope3-calculation-guidance-0#c00032",
+            "quote": "Technical Guidance for Calculating Scope 3 Emissions [33] CATEGORY 1 Purchased Goods and Services Spend-based method If the supplier-specific method, hybrid method, and average-data method are not feasible (e.g., due to data limitations), companies should apply the average spend-based method by collecting data on the economic value of purchased goods and services and multiplying them by the relevant EEIO emission factors."
+          }
+        }
+      ]
+    },
+    {
+      "category": "PURCHASED_STEAM",
+      "legacy_id": "purchasedSteam",
+      "label": "Purchased Steam, Heat & Cooling",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 2",
+      "framework_ref": "Indirect — energy",
+      "templates": [
+        "District Heating",
+        "District Cooling",
+        "Purchased Steam",
+        "Chilled Water"
+      ],
+      "fields": [
+        "energyConsumption",
+        "steamSource",
+        "gridRegion",
+        "spend"
+      ],
+      "fieldOptions": {},
+      "rules": [
+        {
+          "rule_id": "PURCHASED_STEAM__LOC_BASED__002",
+          "methodology": "LOC_BASED",
+          "requires": [
+            "energyConsumption",
+            "gridRegion"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Regional default heat or cooling factor.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "PURCHASED_STEAM__SPEND_BASED__003",
+          "methodology": "SPEND_BASED",
+          "requires": [
+            "spend",
+            "currency",
+            "country"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Screening estimate from utility invoices.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "PURCHASED_STEAM__SUPPLIER_SPEC__001",
+          "methodology": "SUPPLIER_SPEC",
+          "requires": [
+            "energyConsumption",
+            "steamSource"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Supplier-published intensity is preferred wherever the utility discloses one.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        }
+      ]
+    },
+    {
+      "category": "STATIONARY_COMBUSTION",
+      "legacy_id": "stationaryCombustion",
+      "label": "Stationary Combustion",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 1",
+      "framework_ref": "Direct — stationary",
+      "templates": [
+        "Boiler / Furnace",
+        "Diesel Generator",
+        "Process Heater",
+        "Cooking / Kitchen"
+      ],
+      "fields": [
+        "fuelQuantity",
+        "fuelType",
+        "energyConsumption",
+        "spend"
+      ],
+      "fieldOptions": {},
+      "rules": [
+        {
+          "rule_id": "STATIONARY_COMBUSTION__ENERGY_CONTENT__002",
+          "methodology": "ENERGY_CONTENT",
+          "requires": [
+            "energyConsumption",
+            "fuelType"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Used where the site meters delivered energy rather than fuel volume.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "STATIONARY_COMBUSTION__FUEL_BASED__001",
+          "methodology": "FUEL_BASED",
+          "requires": [
+            "fuelQuantity",
+            "fuelType"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Metered fuel purchase is the preferred basis for all stationary sources.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "STATIONARY_COMBUSTION__SPEND_BASED__003",
+          "methodology": "SPEND_BASED",
+          "requires": [
+            "spend",
+            "currency",
+            "fuelType"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Screening only. Fuel price volatility makes this unsuitable for disclosure.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        }
+      ]
+    },
+    {
+      "category": "UPSTREAM_LEASED",
+      "legacy_id": "upstreamLeased",
+      "label": "Upstream Leased Assets",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 3",
+      "framework_ref": "Category 8",
+      "templates": [
+        "Leased Office",
+        "Leased Warehouse",
+        "Leased Vehicle"
+      ],
+      "fields": [
+        "energyConsumption",
+        "gridRegion",
+        "floorArea",
+        "assetType",
+        "spend"
+      ],
+      "fieldOptions": {},
+      "rules": [
+        {
+          "rule_id": "UPSTREAM_LEASED__ASSET_SPEC__001",
+          "methodology": "ASSET_SPEC",
+          "requires": [
+            "energyConsumption",
+            "gridRegion"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Sub-metered consumption for the leased space.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "UPSTREAM_LEASED__FLOOR_AREA__002",
+          "methodology": "FLOOR_AREA",
+          "requires": [
+            "floorArea",
+            "assetType"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Asset-class intensity per square metre where no sub-meter exists.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "UPSTREAM_LEASED__SPEND_BASED__003",
+          "methodology": "SPEND_BASED",
+          "requires": [
+            "spend",
+            "currency"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Lease payments as a last-resort driver.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        }
+      ]
+    },
+    {
+      "category": "UPSTREAM_TRANSPORT",
+      "legacy_id": "upstreamTransport",
+      "label": "Upstream Transportation & Distribution",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 3",
+      "framework_ref": "Category 4",
+      "templates": [
+        "Inbound Freight",
+        "Third-party Warehousing",
+        "Courier & Parcel",
+        "Ocean Freight"
+      ],
+      "fields": [
+        "freightMass",
+        "distance",
+        "mode",
+        "fuelQuantity",
+        "fuelType",
+        "spend"
+      ],
+      "fieldOptions": {
+        "mode": [
+          "Road — LGV (<3.5t)",
+          "Road — HGV (>7.5t)",
+          "Rail — Freight",
+          "Sea — Container Ship",
+          "Air — Freight",
+          "Inland Waterway"
+        ],
+        "distanceUnit": [
+          "km",
+          "tonne.km",
+          "vehicle.km",
+          "miles"
+        ]
+      },
+      "rules": [
+        {
+          "rule_id": "UPSTREAM_TRANSPORT__FUEL_BASED__002",
+          "methodology": "FUEL_BASED",
+          "requires": [
+            "fuelQuantity",
+            "fuelType"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Applies where the carrier discloses fuel consumed on your consignments.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "UPSTREAM_TRANSPORT__VEH_DIST__003",
+          "methodology": "VEH_DIST",
+          "requires": [
+            "distance",
+            "mode"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Vehicle-kilometre factor where consignment weight is unrecorded.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "UPSTREAM_TRANSPORT__WT_DIST__001",
+          "methodology": "WT_DIST",
+          "requires": [
+            "freightMass",
+            "distance",
+            "mode"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Tonne-kilometre is the reference method for all freight movements.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "UPSTREAM_TRANSPORT__SPEND_BASED__004",
+          "methodology": "SPEND_BASED",
+          "requires": [
+            "spend",
+            "currency"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": 4,
+          "preference_basis": "EXPLICIT_STANDARD_GUIDANCE",
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Freight invoice value. Screening only.",
+          "source": {
+            "document": "Technical Guidance for Calculating Scope 3 Emissions",
+            "edition": "Version 1.0",
+            "page": "p65",
+            "chunk_id": "scope3-calculation-guidance-0#c00064",
+            "quote": "Technical Guidance for Calculating Scope 3 Emissions [65] CATEGORY 4 Upstream Transportation and Distribution Spend-based method If the fuel-based method and distance method cannot be applied (e.g., due to data limitations), companies should apply the spend-based method to calculate the emissions from transportation."
+          }
+        }
+      ]
+    },
+    {
+      "category": "USE_OF_SOLD",
+      "legacy_id": "useOfSold",
+      "label": "Use of Sold Products",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 3",
+      "framework_ref": "Category 11",
+      "templates": [
+        "Energy-using Product",
+        "Fuel-using Product",
+        "Feedstock / Intermediate"
+      ],
+      "fields": [
+        "unitsSold",
+        "energyPerUse",
+        "usesPerLifetime",
+        "gridRegion",
+        "fuelQuantity",
+        "fuelType",
+        "productType"
+      ],
+      "fieldOptions": {},
+      "rules": [
+        {
+          "rule_id": "USE_OF_SOLD__AVG_DATA__003",
+          "methodology": "AVG_DATA",
+          "requires": [
+            "unitsSold",
+            "productType"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Product-class lifetime average. Wide uncertainty; disclose the assumption.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "USE_OF_SOLD__USE_DIRECT__001",
+          "methodology": "USE_DIRECT",
+          "requires": [
+            "unitsSold",
+            "energyPerUse",
+            "usesPerLifetime",
+            "gridRegion"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Measured product energy against the grid of the sales market.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "USE_OF_SOLD__USE_FUEL__002",
+          "methodology": "USE_FUEL",
+          "requires": [
+            "unitsSold",
+            "fuelQuantity",
+            "fuelType"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Lifetime fuel combustion for fuel-burning products.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        }
+      ]
+    },
+    {
+      "category": "WASTE_OPERATIONS",
+      "legacy_id": "wasteOperations",
+      "label": "Waste Generated in Operations",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 3",
+      "framework_ref": "Category 5",
+      "templates": [
+        "General Waste",
+        "Recycling Stream",
+        "Hazardous Waste",
+        "Wastewater"
+      ],
+      "fields": [
+        "wasteQuantity",
+        "wasteType",
+        "treatmentMethod",
+        "employeeCount",
+        "spend"
+      ],
+      "fieldOptions": {},
+      "rules": [
+        {
+          "rule_id": "WASTE_OPERATIONS__AVG_DATA__003",
+          "methodology": "AVG_DATA",
+          "requires": [
+            "employeeCount",
+            "country"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Per-employee waste generation default. Use only where no tickets exist.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "WASTE_OPERATIONS__SPEND_BASED__004",
+          "methodology": "SPEND_BASED",
+          "requires": [
+            "spend",
+            "currency"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Waste contractor invoice value.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "WASTE_OPERATIONS__WASTE_TREAT__002",
+          "methodology": "WASTE_TREAT",
+          "requires": [
+            "wasteQuantity",
+            "treatmentMethod"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Average-composition factor for the disposal route.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "WASTE_OPERATIONS__WASTE_TYPE__001",
+          "methodology": "WASTE_TYPE",
+          "requires": [
+            "wasteQuantity",
+            "wasteType",
+            "treatmentMethod"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Weighbridge tickets naming both stream and route.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        }
+      ]
+    },
+    {
+      "category": "WATER_WASTEWATER",
+      "legacy_id": "waterWastewater",
+      "label": "Water Supply & Wastewater",
+      "framework": "GHG_PROTOCOL",
+      "scope": "Scope 3",
+      "framework_ref": "Category 1",
+      "templates": [
+        "Municipal Supply",
+        "Wastewater Discharge",
+        "Treated Effluent"
+      ],
+      "fields": [
+        "waterVolume",
+        "waterService",
+        "spend"
+      ],
+      "fieldOptions": {},
+      "rules": [
+        {
+          "rule_id": "WATER_WASTEWATER__SPEND_BASED__002",
+          "methodology": "SPEND_BASED",
+          "requires": [
+            "spend",
+            "currency",
+            "country"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Utility invoice value where no meter reading exists.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        },
+        {
+          "rule_id": "WATER_WASTEWATER__VOL_WATER__001",
+          "methodology": "VOL_WATER",
+          "requires": [
+            "waterVolume",
+            "waterService"
+          ],
+          "optional": [],
+          "preconditions": [],
+          "preference_rank": null,
+          "preference_basis": null,
+          "applies_count": "one_of",
+          "selection_basis": "unstated",
+          "note": "Metered volume with the service split declared.",
+          "source": {
+            "document": null,
+            "edition": null,
+            "page": null,
+            "chunk_id": null,
+            "quote": null
+          }
+        }
+      ]
+    }
+  ],
+  "published_at": "2026-09-16T03:31:06+00:00",
+  "published_by": "J Subramani",
+  "sha256": "69fd5c7569853a1b60a4af8561b1ab827d359daac7fcb42e7a6518485b8b0d16"
+}
