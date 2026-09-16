@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Methodology Prediction Engine</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{--paper:#fff;--wash:#f7f8f7;--ink:#16181b;--ink2:#5c646b;--ink3:#949ba1;
+--line:#e6e8e6;--line2:#d2d6d2;--green:#0e6b4a;--greenw:#f1f8f4;--greenl:#bedccc;
+--amber:#8a5a0b;--amberw:#fdf8ef;--amberl:#ebd9b8;--red:#b3261e;--redw:#fdf4f3;--redl:#edc7c3;}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--wash);color:var(--ink);font:15px/1.6 "IBM Plex Sans",-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.015em}
+.top{background:var(--paper);border-bottom:1px solid var(--line)}
+.topin{max-width:960px;margin:0 auto;padding:0 20px;height:58px;display:flex;align-items:center;gap:24px}
+.brand{font-weight:600;display:flex;align-items:center;gap:8px}
+.brand svg{color:var(--green)}
+.tabs{display:flex;gap:22px}
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:19px 0 17px;font:inherit;font-size:14px;color:var(--ink2);cursor:pointer}
+.tab[aria-selected=true]{color:var(--ink);font-weight:500;border-bottom-color:var(--green)}
+.page{max-width:960px;margin:0 auto;padding:0 20px}
+.intro{padding:40px 0 24px}
+.intro h1{font-size:26px;line-height:1.25}
+.intro p{color:var(--ink2);margin:10px 0 0;max-width:62ch}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:22px;margin-bottom:18px}
+.card h2{font-size:16px;margin-bottom:14px}
+label{display:block;font-size:13.5px;font-weight:500;margin-bottom:6px}
+input[type=text],input[type=number],input[type=file],select,textarea{
+ width:100%;font:inherit;font-size:14.5px;padding:9px 11px;height:42px;
+ border:1px solid var(--line2);border-radius:6px;background:var(--paper);color:var(--ink)}
+textarea{height:auto;min-height:64px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--green);box-shadow:0 0 0 3px var(--greenw)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:18px}
+.btn{font:inherit;font-size:15px;font-weight:500;padding:12px 24px;border-radius:6px;
+ border:1px solid var(--green);background:var(--green);color:#fff;cursor:pointer}
+.btn:hover{background:#0a5439}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.ghost{background:var(--paper);color:var(--ink);border-color:var(--line2)}
+.hint{font-size:13px;color:var(--ink3);margin-top:8px}
+.log{background:var(--wash);border:1px solid var(--line);border-radius:6px;padding:12px 14px;
+ font:12.5px/1.7 ui-monospace,Consolas,monospace;color:var(--ink2);max-height:210px;overflow:auto;margin-top:16px;white-space:pre-wrap}
+.answer{background:var(--paper);border:1px solid var(--greenl);border-left:4px solid var(--green);
+ border-radius:8px;padding:24px;margin-bottom:16px}
+.answer.warn{border-color:var(--amberl);border-left-color:var(--amber)}
+.answer .lead{font-size:13.5px;color:var(--ink2)}
+.answer h2{font-size:27px;color:var(--green);margin:6px 0 0;line-height:1.15}
+.answer.warn h2{color:var(--amber);font-size:21px}
+.facts{display:flex;flex-wrap:wrap;gap:0;margin-top:20px;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.fact{flex:1 1 150px;padding:12px 14px;border-right:1px solid var(--line)}
+.fact:last-child{border-right:0}
+.fact b{display:block;font-size:14px;margin-top:2px}
+.fact span{font-size:12px;color:var(--ink3)}
+.quote{margin-top:18px;padding:14px 16px;background:var(--greenw);border-radius:6px;font-size:14px;line-height:1.65}
+.quote .src{display:block;margin-top:9px;font-size:12.5px;color:var(--ink2)}
+.ev{border:1px solid var(--line);border-radius:6px;padding:14px 16px;margin-bottom:10px;background:var(--paper)}
+.ev.sel{border-color:var(--greenl);background:var(--greenw)}
+.ev.no{opacity:.75}
+.ev .h{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.ev .h b{font-size:14.5px}
+.ev .tag{font-size:11.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--line2);color:var(--ink2)}
+.ev .tag.ok{border-color:var(--greenl);background:var(--greenw);color:var(--green)}
+.ev .tag.bad{border-color:var(--redl);background:var(--redw);color:var(--red)}
+.ev .tag.amb{border-color:var(--amberl);background:var(--amberw);color:var(--amber)}
+.ev .meta{font-size:12.5px;color:var(--ink2);margin-top:7px}
+.ev .cite{font-size:12.5px;color:var(--ink3);margin-top:6px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-size:12px;font-weight:500;color:var(--ink3);padding:9px 12px;border-bottom:1px solid var(--line)}
+td{padding:10px 12px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+.err{background:var(--redw);border:1px solid var(--redl);color:var(--red);border-radius:6px;padding:12px 14px;margin-top:14px;font-size:14px}
+.note{background:var(--amberw);border:1px solid var(--amberl);border-radius:6px;padding:12px 14px;margin-top:14px;font-size:13.5px;color:var(--ink2)}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid var(--line2);border-top-color:var(--ink2);border-radius:50%;animation:s .7s linear infinite;vertical-align:-1px}
+@keyframes s{to{transform:rotate(360deg)}}
+footer{border-top:1px solid var(--line);background:var(--paper);margin-top:40px;padding:24px 0 40px}
+footer p{max-width:960px;margin:0 auto;padding:0 20px;font-size:13px;color:var(--ink3)}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="topin">
+  <span class="brand">
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M3 13V6.5M3 6.5h5a2.5 2.5 0 002.5-2.5V3M3 9.5h7.5a2.5 2.5 0 012.5 2.5V13"/></svg>
+    SustainGHG
+  </span>
+  <nav class="tabs">
+    <button class="tab" data-tab="predict" aria-selected="true">Predict a method</button>
+    <button class="tab" data-tab="docs" aria-selected="false">Documents</button>
+  </nav>
+</div></header>
+
+<main>
+
+<!-- ======================= PREDICT ======================= -->
+<section id="predict">
+<div class="page">
+  <div class="intro">
+    <h1>Which method do the standards say to use?</h1>
+    <p>Describe the activity and tick what data you actually hold. The engine searches
+       the indexed standards, reads what they say about that activity, and picks the
+       best method your data supports — showing the passage and page it came from.</p>
+  </div>
+
+  <div class="card">
+    <h2>The activity</h2>
+    <label for="act">What is the activity?</label>
+    <input type="text" id="act" placeholder="e.g. purchased goods and services"
+           list="acts" value="purchased goods and services">
+    <datalist id="acts">
+      <option>purchased goods and services</option>
+      <option>business travel</option>
+      <option>upstream transportation and distribution</option>
+      <option>employee commuting</option>
+      <option>waste generated in operations</option>
+      <option>use of sold products</option>
+      <option>investments</option>
+      <option>purchased electricity</option>
+      <option>stationary combustion</option>
+    </datalist>
+
+    <div style="margin-top:20px">
+      <label>What data do you hold?</label>
+      <div class="grid" id="fields"></div>
+      <p class="hint">Only ticked items count as available. Anything unticked is treated
+         as unknown — the engine never assumes a value.</p>
+    </div>
+
+    <div class="row">
+      <button class="btn" id="go">Consult the standards</button>
+      <span class="hint" id="cachenote"></span>
+    </div>
+    <div class="log" id="plog" hidden></div>
+    <div class="err" id="perr" hidden></div>
+  </div>
+
+  <div id="result"></div>
+</div>
+</section>
+
+<!-- ======================= DOCUMENTS ======================= -->
+<section id="docs" hidden>
+<div class="page">
+  <div class="intro">
+    <h1>The knowledge base</h1>
+    <p>These are the documents the engine reads. Add a methodology PDF and it is
+       registered, split into sections, chunked and indexed — then it can be cited.</p>
+  </div>
+
+  <div class="card">
+    <h2>Add a document</h2>
+    <form id="up">
+      <div class="grid">
+        <div><label for="u_pub">Publisher</label>
+          <input type="text" id="u_pub" name="publisher" placeholder="e.g. DEFRA" required></div>
+        <div><label for="u_title">Title</label>
+          <input type="text" id="u_title" name="title" placeholder="e.g. GHG Conversion Factors Methodology" required></div>
+        <div><label for="u_ed">Edition</label>
+          <input type="text" id="u_ed" name="edition" placeholder="e.g. 2026 or First Edition" required></div>
+        <div><label for="u_yr">Year</label>
+          <input type="number" id="u_yr" name="year" placeholder="2026" required></div>
+      </div>
+      <div style="margin-top:14px">
+        <label for="u_file">PDF</label>
+        <input type="file" id="u_file" name="pdf" accept="application/pdf" required>
+        <p class="hint">Text PDFs only — there is no OCR, so a scan will be rejected
+           rather than silently indexed as empty.</p>
+      </div>
+      <div class="row"><button class="btn" id="upbtn" type="submit">Upload and index</button></div>
+    </form>
+    <div class="log" id="ulog" hidden></div>
+    <div class="err" id="uerr" hidden></div>
+  </div>
+
+  <div class="card">
+    <h2>Indexed documents <span class="hint" id="cstat"></span></h2>
+    <div style="overflow-x:auto"><table id="ctable"><thead><tr>
+      <th>Document</th><th>Publisher</th><th>Edition</th><th>Year</th><th>Pages</th>
+    </tr></thead><tbody></tbody></table></div>
+  </div>
+</div>
+</section>
+
+</main>
+
+<footer><p>The engine reads the standards to find which methods exist and how they rank.
+Choosing between them stays deterministic: same activity, same data, same answer —
+with the passage that justifies it.</p></footer>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+  document.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-selected', x===t));
+  $('#predict').hidden = t.dataset.tab !== 'predict';
+  $('#docs').hidden    = t.dataset.tab !== 'docs';
+  if (t.dataset.tab === 'docs') loadCorpus();
+});
+
+/* ---- field checkboxes ---- */
+const COMMON = ['spend','currency','materialMass','materialType','supplierData','sectorCode',
+  'distance','mode','freightMass','fuelQuantity','fuelType','energyConsumption','gridRegion',
+  'contractualInstrument','wasteQuantity','wasteType','treatmentMethod','employeeCount',
+  'nights','unitsSold','investeeEmissions','ownershipShare','investmentValue'];
+let FIELDS = {};
+fetch('/api/fields').then(r=>r.json()).then(f=>{
+  FIELDS = f;
+  $('#fields').innerHTML = COMMON.filter(k=>f[k]).map(k =>
+    `<label style="font-weight:400;display:flex;gap:8px;align-items:flex-start;margin:0">
+       <input type="checkbox" value="${k}" style="width:auto;height:auto;margin-top:4px">
+       <span>${esc(f[k].label)}</span></label>`).join('');
+});
+
+/* ---- poll a job ---- */
+function poll(jid, onLog, onDone, onErr){
+  let seen = 0;
+  const t = setInterval(async () => {
+    const j = await (await fetch('/api/job/'+jid)).json();
+    (j.log||[]).slice(seen).forEach(l => onLog(l));
+    seen = (j.log||[]).length;
+    if (j.status === 'done'){ clearInterval(t); onDone(j); }
+    if (j.status === 'error'){ clearInterval(t); onErr(j); }
+  }, 700);
+}
+
+/* ---- predict ---- */
+$('#go').onclick = async () => {
+  const activity = $('#act').value.trim();
+  if (!activity) return;
+  const inputs = {};
+  document.querySelectorAll('#fields input:checked').forEach(c => inputs[c.value] = '1');
+  $('#go').disabled = true; $('#result').innerHTML = '';
+  $('#perr').hidden = true;
+  const log = $('#plog'); log.hidden = false; log.textContent = '';
+
+  const r = await (await fetch('/api/predict', {method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({activity, inputs})})).json();
+  if (r.error){ $('#go').disabled=false; $('#perr').hidden=false; $('#perr').textContent=r.error; return; }
+
+  poll(r.job,
+    l => { log.textContent += l + '\n'; log.scrollTop = log.scrollHeight; },
+    j => { $('#go').disabled=false; renderResult(j.result); },
+    j => { $('#go').disabled=false; $('#perr').hidden=false;
+           $('#perr').textContent = (j.log||[]).slice(-1)[0] || 'failed'; });
+};
+
+function renderResult(res){
+  if (!res) return;
+  const out = [];
+
+  if (res.verdict === 'no_methods_found'){
+    out.push(`<div class="answer warn"><p class="lead">Searched ${res.considered} passage(s)</p>
+      <h2>No method found in the indexed standards</h2>
+      <p style="margin-top:12px;color:var(--ink2)">Nothing in the knowledge base describes a
+      calculation method for “${esc(res.activity)}”. Either the governing document is not
+      loaded, or the wording differs — try the document's own phrasing.</p></div>`);
+  } else if (res.verdict === 'insufficient_data'){
+    out.push(`<div class="answer warn"><p class="lead">The standards describe
+      ${res.evaluations.length} method(s) for this activity</p>
+      <h2>Your data does not satisfy any of them</h2>
+      <p style="margin-top:12px;color:var(--ink2)">Nothing was assumed. Tick the data you
+      hold below and the engine will pick the best method it supports.</p></div>`);
+  } else {
+    const c = res.chosen;
+    out.push(`<div class="answer">
+      <p class="lead">The standards say to use</p>
+      <h2>${esc(c.method)}</h2>
+      <div class="facts">
+        <div class="fact"><span>Data you hold</span><b>${c.requires.map(f=>FIELDS[f]?FIELDS[f].short||FIELDS[f].label:f).join(', ')||'—'}</b></div>
+        <div class="fact"><span>Rank in the standard</span><b>${c.priority} of ${res.evaluations.length}</b></div>
+        <div class="fact"><span>Confidence</span><b>${esc(c.confidence||'—')}</b></div>
+      </div>
+      <div class="quote">“${esc((c.evidence&&c.evidence.quote)||'')}”
+        <span class="src">${esc(c.evidence.document)} — ${esc(c.evidence.edition)}
+        (${c.evidence.year}) · ${esc(c.evidence.pages)}${c.evidence.section?' · '+esc(c.evidence.section.slice(0,80)):''}</span>
+      </div>
+      ${c.confidence_signals&&c.confidence_signals.length?
+        `<p class="hint">Confidence from: ${c.confidence_signals.map(esc).join('; ')}</p>`:''}
+    </div>`);
+  }
+
+  if (res.dual_reporting && res.dual_reporting.length){
+    out.push(`<div class="note"><b>The standard requires more than one figure here.</b>
+      ${res.dual_reporting.map(esc).join(' and ')} are marked “all of” — both must be
+      reported. This engine returns a single method, so that is a known gap.</div>`);
+  }
+
+  if (res.evaluations && res.evaluations.length){
+    out.push('<div class="card"><h2>What the standards offer, and why this one</h2>');
+    res.evaluations.forEach(e => {
+      const tag = e.status==='selected' ? '<span class="tag ok">selected</span>'
+        : e.status==='outranked' ? '<span class="tag amb">ranked lower</span>'
+        : '<span class="tag bad">data you do not hold</span>';
+      out.push(`<div class="ev ${e.status==='selected'?'sel':e.status==='not_enough_data'?'no':''}">
+        <div class="h"><b>${esc(e.method)}</b>${tag}
+          <span class="tag">${esc(e.applies_count)} / ${esc(e.selection_basis)}</span></div>
+        <div class="meta">Needs: ${e.requires.map(f=>FIELDS[f]?FIELDS[f].short||FIELDS[f].label:f).join(', ')||'—'}
+          ${e.missing.length?` · <span style="color:var(--red)">missing ${e.missing.map(f=>FIELDS[f]?FIELDS[f].short||FIELDS[f].label:f).join(', ')}</span>`:''}</div>
+        ${e.unmapped.length?`<div class="meta" style="color:var(--amber)">Not in our field
+          dictionary: ${e.unmapped.map(esc).join('; ')}</div>`:''}
+        <div class="cite">${esc(e.evidence.document)} ${esc(e.evidence.pages)}</div>
+      </div>`);
+    });
+    out.push('</div>');
+  }
+
+  if (res.rejected && res.rejected.length){
+    out.push(`<div class="card"><h2>Rejected before you saw them</h2>
+      <p class="hint" style="margin:0 0 12px">Every claim must quote the passage it came
+      from. These failed that check or the model declined to answer — they never reach a result.</p>
+      ${res.rejected.map(r=>`<div class="ev no"><div class="h">
+        <span class="tag bad">${esc(r.rejected_by)}</span>
+        <span>${esc(r.document||'')} ${esc(r.pages||'')}</span></div>
+        <div class="meta">${esc((r.problems||[])[0]||'').slice(0,150)}</div></div>`).join('')}
+    </div>`);
+  }
+  $('#result').innerHTML = out.join('');
+}
+
+/* ---- upload ---- */
+$('#up').onsubmit = async ev => {
+  ev.preventDefault();
+  const fd = new FormData($('#up'));
+  $('#upbtn').disabled = true; $('#uerr').hidden = true;
+  const log = $('#ulog'); log.hidden = false; log.textContent = '';
+  const r = await (await fetch('/api/upload', {method:'POST', body: fd})).json();
+  if (r.error){ $('#upbtn').disabled=false; $('#uerr').hidden=false; $('#uerr').textContent=r.error; return; }
+  poll(r.job,
+    l => { log.textContent += l + '\n'; log.scrollTop = log.scrollHeight; },
+    () => { $('#upbtn').disabled=false; $('#up').reset(); loadCorpus(); },
+    j => { $('#upbtn').disabled=false; $('#uerr').hidden=false;
+           $('#uerr').textContent = (j.log||[]).slice(-1)[0] || 'failed'; });
+};
+
+async function loadCorpus(){
+  const c = await (await fetch('/api/corpus')).json();
+  $('#cstat').textContent = `${c.documents.length} documents · ${c.sections} sections · ${c.chunks} passages`;
+  $('#ctable tbody').innerHTML = c.documents.map(d =>
+    `<tr><td><b>${esc(d.title)}</b>${d.provisional?' <span class="tag bad">draft</span>':''}</td>
+     <td>${esc(d.publisher)}</td><td>${esc(d.edition)}</td><td>${d.year}</td><td>${d.page_count}</td></tr>`).join('');
+}
+loadCorpus();
+</script>
+</body>
+</html>

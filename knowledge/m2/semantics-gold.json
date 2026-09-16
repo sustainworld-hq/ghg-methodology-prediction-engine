@@ -1,0 +1,92 @@
+{
+  "about": "Agreed labels for the selection fields, against real passages. This exists so the bake-off grades models against a decision that was made and written down BEFORE any model was run. Without it, a disagreement between grader and model is unattributable: we could not tell whether the model was wrong or the contract was vague.",
+
+  "why_two_fields": "The single `selection_semantics` field conflated two independent questions and was therefore unlabellable. Passages A and B below are grammatically identical 'if X then Y' sentences, yet they mean different things: in A the condition is about OTHER METHODS, in B it is about the INSTRUMENTS. One field could not separate them. Two orthogonal fields can.",
+
+  "fields": {
+    "applies_count": {
+      "one_of": "the reporter ends up using a single method for this activity",
+      "all_of": "more than one method applies and all their results are required",
+      "unstated": "the passage does not say"
+    },
+    "selection_basis": {
+      "other_method_availability": "which method applies turns on whether ANOTHER NAMED METHOD is feasible or available",
+      "published_decision_tree": "the passage defers to a decision tree, figure, or tier-selection procedure",
+      "activity_condition": "a condition about the activity, the data, the instruments or the circumstances — anything that is NOT another method",
+      "unstated": "no basis given"
+    }
+  },
+
+  "procedure": {
+    "note": "Apply in order. First match wins. The single discriminating question between rules 1 and 3 is: IS THE THING NAMED IN THE CONDITION A CALCULATION METHOD?",
+    "selection_basis": [
+      "1. Does this method's use depend on another NAMED CALCULATION METHOD being unavailable, infeasible, or not used? -> other_method_availability",
+      "2. Does the passage point to a decision tree, figure, or tier-selection procedure to choose the method? -> published_decision_tree",
+      "3. Does the passage state a condition that is NOT about another calculation method (about data, instruments, the activity, or circumstances)? -> activity_condition",
+      "4. Otherwise -> unstated"
+    ],
+    "applies_count": [
+      "1. Does the passage require more than one method's result for the same activity? -> all_of",
+      "2. Does it indicate a single method is applied? -> one_of",
+      "3. Silent -> unstated"
+    ]
+  },
+
+  "labelled": [
+    {
+      "id": "SEM-A",
+      "chunk": "scope3-calculation-guidance-0#c00032",
+      "source": "Scope 3 Technical Guidance (2013) p.33, Category 1",
+      "quote": "If the supplier-specific method, hybrid method, and average-data method are not feasible (e.g., due to data limitations), companies should apply the average spend-based method",
+      "applies_count": "one_of",
+      "selection_basis": "other_method_availability",
+      "rule_fired": "basis rule 1 — the condition names three other calculation methods",
+      "trap": "Reads like a plain condition. Under the old single field, 'conditional' and 'first_match' were both defensible and the case was ungradeable.",
+      "expected_ordering_relations": [
+        {"relation": "ranks_below", "other_method_verbatim": "supplier-specific method"},
+        {"relation": "ranks_below", "other_method_verbatim": "hybrid method"},
+        {"relation": "ranks_below", "other_method_verbatim": "average-data method"}
+      ]
+    },
+    {
+      "id": "SEM-B",
+      "chunk": "ghg-protocol-scope-2-guidance-final-2015#c00073",
+      "source": "Scope 2 Guidance (2015) p.62",
+      "quote": "Companies shall ensure that any contractual instruments used in the market-based method total meet the Scope 2 Quality Criteria",
+      "applies_count": "one_of",
+      "selection_basis": "activity_condition",
+      "rule_fired": "basis rule 3 — the condition is about contractual instruments, which are not a calculation method",
+      "trap": "Grammatically identical to SEM-A. The ONLY thing separating them is what the condition is about. This pair is the reason the field was split."
+    },
+    {
+      "id": "SEM-C",
+      "chunk": "v2-2-ch2-stationary-combustion#c00014",
+      "source": "IPCC 2006 Guidelines V2 Ch2, Stationary Combustion, decision trees",
+      "applies_count": "one_of",
+      "selection_basis": "published_decision_tree",
+      "rule_fired": "basis rule 2 — the chapter selects a tier via a published decision tree",
+      "trap": "A tier is not a fallback among named methods; it is an external procedure. Labelling it other_method_availability would be wrong."
+    },
+    {
+      "id": "SEM-D",
+      "chunk": "ghg-protocol-scope-2-guidance-final-2015#c00077",
+      "source": "Scope 2 Guidance (2015) p.64, dual reporting",
+      "quote": "the two required for dual reporting",
+      "applies_count": "all_of",
+      "selection_basis": "unstated",
+      "rule_fired": "count rule 1 — both results are required for the same activity",
+      "trap": "The engine cannot represent this yet. The label records what the STANDARD says, not what our engine does; the gap is tracked by tests/activity-cases.json case PE-dual-KNOWN-LIMITATION."
+    },
+    {
+      "id": "SEM-E",
+      "chunk": "19r-v2-2-ch02-stationary-combustion#c00003",
+      "source": "IPCC 2019 Refinement V2 Ch2",
+      "quote": "No refinement.",
+      "outcome": "no_change",
+      "applies_count": "unstated",
+      "selection_basis": "unstated",
+      "rule_fired": "outcome short-circuits: a passage stating nothing changed carries no method",
+      "trap": "The failure mode is inventing a method. outcome must be no_change and the selection fields must not be guessed."
+    }
+  ]
+}

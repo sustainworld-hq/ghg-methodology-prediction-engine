@@ -94,11 +94,46 @@ REGISTRY = {
         "DEFRA", "GHG Conversion Factors Methodology Report", "2026", 2026, "defra-methodology"),
 }
 
+# Uploaded documents register themselves here rather than in the curated map
+# above, so a user can add a PDF without editing source. Same shape, same
+# validation; the file is written by the upload handler.
+UPLOADED_REGISTRY = CORPUS / "_uploaded.json"
+
+
+def _load_uploaded() -> dict:
+    if not UPLOADED_REGISTRY.exists():
+        return {}
+    try:
+        raw = json.loads(UPLOADED_REGISTRY.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    return {k: tuple(v) for k, v in raw.items() if isinstance(v, list) and len(v) == 5}
+
+
+def register_upload(filename: str, publisher: str, title: str,
+                    edition: str, year: int, family: str) -> None:
+    """Record metadata for an uploaded PDF so the pipeline will ingest it."""
+    cur = {}
+    if UPLOADED_REGISTRY.exists():
+        try:
+            cur = json.loads(UPLOADED_REGISTRY.read_text(encoding="utf-8"))
+        except Exception:
+            cur = {}
+    cur[filename] = [publisher, title, edition, int(year), family]
+    UPLOADED_REGISTRY.parent.mkdir(parents=True, exist_ok=True)
+    UPLOADED_REGISTRY.write_text(json.dumps(cur, indent=2, ensure_ascii=False),
+                                 encoding="utf-8")
+    REGISTRY.update(_load_uploaded())
+
+
 # Publishers lay out headings differently; 03_segment reads these profiles.
 # Documents that are drafts or consultations. Anything extracted from these
 # carries provisional status through to governance and can never be published
 # as a citation to the final standard.
 PROVISIONAL: set[str] = set()
+
+# merge any uploaded documents into the curated registry
+REGISTRY.update(_load_uploaded())
 
 HEADING_PROFILES = {
     "GHG Protocol": {"size_ratio": 1.12, "max_words": 14, "allow_allcaps": True},

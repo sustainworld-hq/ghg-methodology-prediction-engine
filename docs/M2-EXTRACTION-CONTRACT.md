@@ -36,27 +36,98 @@
 
   These are not hypotheticals. Each was found by reading real retrieved passages.
 
-  ### 2.1 Not every method set is first-match
+  ### 2.1 Not every method set is first-match — and one field could not say so
 
-  Scope 2 Guidance §7.2, verbatim: *"This Guidance requires that companies
-  calculate scope 2 in two ways."* Both figures are reported. A schema that only
-  expresses "first satisfied rule wins" cannot represent this, and would silently
-  turn a dual-reporting requirement into a single answer.
+Scope 2 Guidance requires dual reporting: **both** figures. IPCC selects a tier
+against a published decision tree. Neither is "first satisfied rule wins".
 
-  IPCC is different again — Tier 1/2/3 is selected by data availability against
-  a published decision tree, not by our priority order.
+The first version of this contract used a single `selection_semantics` field
+with values `first_match | multi_applicable | tier_selection | conditional |
+unclear`. **That field was unlabellable, and the first bake-off proved it.**
+Consider two real passages:
 
-  So `selection_semantics` is a required, first-class field:
+> **A.** *"If the supplier-specific method, hybrid method, and average-data
+> method are not feasible (e.g., due to data limitations), companies should
+> apply the average spend-based method"*
+> — Scope 3 Technical Guidance p.33
 
-  | Value | Meaning |
-  | --- | --- |
-  | `first_match` | Ordered fallback; the best feasible method is used |
-  | `multi_applicable` | More than one method applies **and all must be reported** |
-  | `tier_selection` | Chosen against a published decision tree (IPCC tiers) |
-  | `conditional` | Applies only when a stated condition holds |
-  | `unclear` | The passage does not establish which |
+> **B.** *"Companies shall ensure that any contractual instruments used in the
+> market-based method total meet the Scope 2 Quality Criteria"*
+> — Scope 2 Guidance p.62
 
-  ### 2.2 Some passages exist to say nothing changed
+Both are "if X then Y". `first_match` and `conditional` were each defensible
+for both. When the model answered `conditional`, we could not tell whether the
+model was wrong or the contract was vague — which makes the benchmark
+worthless.
+
+The cause was that one field was answering **two independent questions**. They
+are now two fields.
+
+#### `applies_count` — how many methods does the reporter end up using?
+
+| Value | Meaning |
+| --- | --- |
+| `one_of` | A single method is used for this activity |
+| `all_of` | More than one applies and **all** results are required |
+| `unstated` | The passage does not say |
+
+#### `selection_basis` — what decides which one?
+
+| Value | Meaning |
+| --- | --- |
+| `other_method_availability` | Turns on whether another **named calculation method** is feasible |
+| `published_decision_tree` | Defers to a decision tree, figure or tier procedure |
+| `activity_condition` | A condition about data, instruments, activity or circumstances — **not** another method |
+| `unstated` | No basis given |
+
+#### The procedure, applied in order
+
+**`selection_basis`** — first match wins:
+
+1. Does this method's use depend on another **named calculation method** being unavailable or infeasible? → `other_method_availability`
+2. Does the passage point to a decision tree, figure or tier-selection procedure? → `published_decision_tree`
+3. Does it state a condition that is **not** about another calculation method? → `activity_condition`
+4. Otherwise → `unstated`
+
+**`applies_count`** — first match wins:
+
+1. More than one method's result required for the same activity? → `all_of`
+2. A single method is applied? → `one_of`
+3. Silent → `unstated`
+
+The single question separating rules 1 and 3 is: **is the thing named in the
+condition a calculation method?** That is checkable, so grader and model apply
+it identically. Passage A names three methods → rule 1. Passage B names
+contractual instruments → rule 3.
+
+Under the two fields, the four shapes come out cleanly and without overlap:
+
+| Passage | `applies_count` | `selection_basis` |
+| --- | --- | --- |
+| A — spend-based fallback | `one_of` | `other_method_availability` |
+| B — instrument quality criteria | `one_of` | `activity_condition` |
+| C — IPCC tier decision tree | `one_of` | `published_decision_tree` |
+| D — Scope 2 dual reporting | `all_of` | `unstated` |
+
+Agreed labels for real passages live in `knowledge/m2/semantics-gold.json`,
+written **before** any model is run. A model may only be graded against labels
+that already existed.
+
+#### Ordering relations are directional
+
+`fallback_of | preferred_over | alternative_to` had the same overlap problem —
+the first two describe one relation seen from either end. One direction only:
+
+| Value | Meaning |
+| --- | --- |
+| `ranks_below` | The named method is used **instead of this one** when feasible |
+| `ranks_above` | This method is used **instead of the named one** when feasible |
+| `no_stated_order` | Both offered, no preference stated |
+
+Always expressed from the extracted method's point of view. M3 turns a set of
+`ranks_below` relations into the integers the engine needs.
+
+### 2.2 Some passages exist to say nothing changed
 
   `19R_V2_2_Ch02_Stationary_Combustion` contains the phrase **"No refinement"
   13 times**: §2.3.1 Choice of method — *No refinement.* An extractor asked to
@@ -106,9 +177,10 @@
     "method_name_verbatim": "Spend-based method",
     "method_description": "…as the passage states it…",
 
-    "selection_semantics": "first_match",
+    "applies_count": "one_of",
+    "selection_basis": "other_method_availability",
     "ordering_relations": [
-      { "type": "fallback_of",
+      { "relation": "ranks_below",
         "other_method_verbatim": "average-data method",
         "condition_verbatim": "if the supplier-specific method, hybrid method, and average-data method are not feasible" }
     ],
@@ -170,7 +242,7 @@
   - every input mapped to a known field (V4)
   - corroborated by more than one retrieved chunk
   - source is not provisional
-  - `selection_semantics` is not `unclear`
+  - `applies_count` and `selection_basis` are not both `unstated`
 
   Reported as `high` / `medium` / `low` with the contributing signals listed, so a
   reviewer sees *why*.

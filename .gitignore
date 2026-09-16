@@ -24,3 +24,5 @@ __pycache__/
 
 # local scratch (D: drive only)
 .work/
+knowledge/candidates/
+knowledge/corpus/_uploaded.json
