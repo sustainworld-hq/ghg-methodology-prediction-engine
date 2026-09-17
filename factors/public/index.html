@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Factor Resolver</title>
+<style>
+:root{--paper:#fff;--wash:#f7f8f7;--ink:#16181b;--ink2:#5c646b;--ink3:#949ba1;
+--line:#e6e8e6;--line2:#d2d6d2;--green:#0e6b4a;--greenw:#f1f8f4;--greenl:#bedccc;
+--amber:#8a5a0b;--amberw:#fdf8ef;--amberl:#ebd9b8;--red:#b3261e;--redw:#fdf4f3;--redl:#edc7c3;
+--slate:#1f5e8c;--slatew:#eef4f9;--slatel:#c3d9e8;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--wash);color:var(--ink);
+ font:15px/1.6 "IBM Plex Sans",-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.015em}
+.mono{font-family:ui-monospace,Consolas,monospace}
+.top{background:var(--paper);border-bottom:1px solid var(--line)}
+.topin{max-width:1060px;margin:0 auto;padding:14px 20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.brand{font-weight:600}
+.badge{font-size:11.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--line2);color:var(--ink2)}
+.badge.ok{border-color:var(--greenl);background:var(--greenw);color:var(--green)}
+.page{max-width:1060px;margin:0 auto;padding:0 20px}
+.intro{padding:28px 0 18px}
+.intro h1{font-size:23px}
+.intro p{color:var(--ink2);margin:8px 0 0;max-width:72ch}
+.layout{display:grid;grid-template-columns:330px 1fr;gap:18px;align-items:start}
+@media(max-width:860px){.layout{grid-template-columns:1fr}}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:18px;margin-bottom:16px}
+.card h2{font-size:14.5px;margin-bottom:12px}
+.scn{display:block;width:100%;text-align:left;font:inherit;cursor:pointer;background:var(--paper);
+ border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin-bottom:8px}
+.scn:hover{border-color:var(--green)}
+.scn.on{border-color:var(--green);background:var(--greenw)}
+.scn b{display:block;font-size:13.5px}
+.scn span{font-size:12px;color:var(--ink3)}
+.scn i{font-style:normal;font-size:11px;font-family:ui-monospace,Consolas,monospace;color:var(--ink2)}
+label{display:block;font-size:12.5px;font-weight:500;margin:10px 0 4px}
+select,input{width:100%;font:inherit;font-size:14px;padding:8px 10px;height:38px;
+ border:1px solid var(--line2);border-radius:6px;background:var(--paper);color:var(--ink)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{font:inherit;font-size:14.5px;font-weight:500;padding:10px 20px;border-radius:6px;cursor:pointer;
+ border:1px solid var(--green);background:var(--green);color:#fff;margin-top:14px;width:100%}
+.btn:hover{background:#0a5439}
+.ans{border-radius:8px;padding:20px;border:1px solid var(--line);background:var(--paper);border-left:4px solid var(--ink3);margin-bottom:16px}
+.ans .st{font-size:11.5px;letter-spacing:.06em;font-weight:600;font-family:ui-monospace,Consolas,monospace}
+.ans h2{font-size:24px;margin:6px 0 0;line-height:1.2}
+.ans p{color:var(--ink2);margin:8px 0 0}
+.FACTOR_SELECTED{border-left-color:var(--green)} .FACTOR_SELECTED .st,.FACTOR_SELECTED h2{color:var(--green)}
+.MULTIPLE_FACTORS_APPLICABLE,.VALUE_IS_RANGE{border-left-color:var(--amber)}
+.MULTIPLE_FACTORS_APPLICABLE .st,.MULTIPLE_FACTORS_APPLICABLE h2,.VALUE_IS_RANGE .st,.VALUE_IS_RANGE h2{color:var(--amber)}
+.DERIVATION_REQUIRED{border-left-color:var(--slate)} .DERIVATION_REQUIRED .st,.DERIVATION_REQUIRED h2{color:var(--slate)}
+.NO_BINDING,.NO_FACTOR,.UNIT_INCOMPATIBLE{border-left-color:var(--red)}
+.NO_BINDING .st,.NO_BINDING h2,.NO_FACTOR .st,.NO_FACTOR h2,.UNIT_INCOMPATIBLE .st,.UNIT_INCOMPATIBLE h2{color:var(--red)}
+.big{font-size:34px;font-weight:600;letter-spacing:-.02em;font-family:ui-monospace,Consolas,monospace}
+.big small{font-size:15px;color:var(--ink2);font-weight:400;margin-left:6px}
+.warn{margin-top:12px;padding:10px 12px;border-radius:6px;background:var(--amberw);border:1px solid var(--amberl);font-size:13.5px}
+.info{margin-top:12px;padding:10px 12px;border-radius:6px;background:var(--slatew);border:1px solid var(--slatel);font-size:13.5px}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}
+th{text-align:left;font-size:11.5px;font-weight:500;color:var(--ink3);padding:7px 9px;border-bottom:1px solid var(--line)}
+td{padding:8px 9px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:4px 12px;font-size:13px;margin-top:14px}
+.kv div:nth-child(odd){color:var(--ink3)}
+.kv div:nth-child(even){font-family:ui-monospace,Consolas,monospace}
+details{margin-top:14px}summary{cursor:pointer;font-size:13px;color:var(--ink2)}
+pre{background:var(--wash);border:1px solid var(--line);border-radius:6px;padding:12px;font-size:12px;overflow:auto;max-height:320px}
+.empty{color:var(--ink3);padding:30px 0;text-align:center}
+</style>
+</head>
+<body>
+<header class="top"><div class="topin">
+  <span class="brand">Factor Resolver</span>
+  <span class="badge ok">no model · no network</span>
+  <span class="badge" id="b-rel">loading…</span>
+  <span class="badge mono" id="b-dig"></span>
+</div></header>
+
+<main><div class="page">
+  <div class="intro">
+    <h1>Which exact factor, from a frozen release?</h1>
+    <p>Pick a case or build your own. Every answer comes from one frozen release and an
+       authored binding file. When the release can't give an honest answer — a missing gas,
+       a published range, several rows and nothing to choose between them — it says so
+       instead of producing a number.</p>
+  </div>
+
+  <div class="layout">
+    <div>
+      <div class="card">
+        <h2>Cases</h2>
+        <div id="scns"></div>
+      </div>
+      <div class="card">
+        <h2>Or build one</h2>
+        <label for="bind">Activity (from the bindings)</label>
+        <select id="bind"></select>
+        <div class="row">
+          <div><label for="gas">Gas</label>
+            <select id="gas"><option>CO2E</option><option>CO2</option><option>CH4</option><option>N2O</option></select></div>
+          <div><label for="unit">Per unit</label>
+            <select id="unit"><option>km</option><option>mile</option><option>TJ</option>
+            <option>tonne</option><option>litre</option><option>Gg</option></select></div>
+        </div>
+        <button class="btn" id="go">Resolve</button>
+      </div>
+    </div>
+
+    <div id="out"><div class="card empty">Pick a case on the left.</div></div>
+  </div>
+</div></main>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+let BINDINGS=[];
+
+const HEAD={FACTOR_SELECTED:'Factor selected',
+ DERIVATION_REQUIRED:'Not published — would need deriving',
+ MULTIPLE_FACTORS_APPLICABLE:'Several rows qualify',
+ VALUE_IS_RANGE:'Published as a range',
+ NO_BINDING:'No binding to this publisher',
+ NO_FACTOR:'Bound, but no matching row',
+ UNIT_INCOMPATIBLE:'No conversion path to that unit'};
+
+fetch('api/release').then(r=>r.json()).then(d=>{
+  $('#b-rel').textContent=`${d.release_id} · ${d.factors} factors · ${d.conversions} conversions`;
+  $('#b-dig').textContent=String(d.release_digest||'').slice(0,12);
+  $('#b-dig').title='release digest '+d.release_digest;
+});
+
+fetch('api/scenarios').then(r=>r.json()).then(list=>{
+  const host=$('#scns');
+  list.forEach((s,i)=>{
+    const b=document.createElement('button'); b.className='scn';
+    b.innerHTML=`<b>${esc(s.label)}</b><span>${esc(s.why)}</span><br><i>→ ${esc(s.expect)}</i>`;
+    b.onclick=()=>{document.querySelectorAll('.scn').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on'); run(s);};
+    host.appendChild(b);
+  });
+});
+
+fetch('api/bindings').then(r=>r.json()).then(list=>{
+  BINDINGS=list;
+  $('#bind').innerHTML=list.map((b,i)=>{
+    const sel=b.our_selector, what=sel.fuelType||sel.mode||sel.activityCategory;
+    return `<option value="${i}">${esc(what)} · ${esc(b.methodology)} · ${esc(b.confidence)}</option>`;
+  }).join('');
+});
+
+$('#go').onclick=()=>{
+  const b=BINDINGS[$('#bind').value];
+  document.querySelectorAll('.scn').forEach(x=>x.classList.remove('on'));
+  run({methodology:b.methodology,record:b.our_selector,want_gas:$('#gas').value,want_unit:$('#unit').value});
+};
+
+async function run(q){
+  $('#out').innerHTML='<div class="card empty">Resolving…</div>';
+  const r=await (await fetch('api/resolve',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({methodology:q.methodology,record:q.record,want_gas:q.want_gas,
+      want_unit:q.want_unit,reporting_year:q.reporting_year})})).json();
+  render(r,q);
+}
+
+function factorRows(rows){
+  return `<table><thead><tr><th>Selector</th><th>Value</th><th>Unit</th><th>Row</th></tr></thead><tbody>`+
+    rows.map(a=>`<tr><td>${esc(Object.entries(a.selector).map(([k,v])=>k+': '+v).join(' · '))}</td>
+      <td class="mono">${a.value_kind==='RANGE'?esc(a.value_low)+' – '+esc(a.value_high)+' <b style="color:var(--amber)">range</b>':esc(a.value)}</td>
+      <td class="mono">${esc(a.unit)}</td><td class="mono">${esc(a.source_row)}</td></tr>`).join('')+
+    `</tbody></table>`;
+}
+
+function render(r,q){
+  const st=r.status, f=r.factor;
+  let body='';
+  if(st==='FACTOR_SELECTED'){
+    body=`<div class="big" style="margin-top:12px">${esc(f.value)}<small>${esc(f.unit)}</small></div>
+      <div class="kv">
+        <div>category</div><div>${esc(f.category_path.join(' › '))}</div>
+        <div>gas</div><div>${esc(f.gas)}</div>
+        <div>source</div><div>${esc(f.source.sheet)} · row ${esc(f.source.row)}</div>
+        <div>factor id</div><div>${esc(f.factor_id)}</div>
+        ${f.conversions&&f.conversions.length?`<div>conversion</div><div>${esc(f.conversions.map(c=>
+          c.kind==='governed'?`${c.conversion_id}: ${c.from} → ${c.to} × ${c.value}`:`scale ${c.from} → ${c.to} × ${c.factor}`).join('; '))}</div>`:''}
+      </div>
+      ${r.specificity_warning?`<div class="warn">⚠ ${esc(r.specificity_warning)}</div>`:''}`;
+  } else if(st==='DERIVATION_REQUIRED'){
+    const d=r.derivation||{};
+    body=`<p>${esc(r.reason)}</p>
+      <div class="info"><b>Have:</b> ${esc((d.have||[]).join(', '))} &nbsp; <b>Missing:</b> ${esc((d.needs||[]).join(', '))}<br>
+      ${esc(d.note)}</div>`;
+  } else if(st==='MULTIPLE_FACTORS_APPLICABLE'){
+    body=`<p>${esc(r.reason)}</p>`+factorRows(r.applicable||[])+
+      (r.applicable_count>(r.applicable||[]).length?`<p>…and ${r.applicable_count-r.applicable.length} more.</p>`:'');
+  } else if(st==='VALUE_IS_RANGE'){
+    body=`<div class="big" style="margin-top:12px">${esc(f.value_low)} – ${esc(f.value_high)}<small>${esc(f.unit)}</small></div>
+      <p>${esc(r.reason)}</p>`;
+  } else {
+    body=`<p>${esc(r.reason||'')}</p>${r.available_units?`<p>Units this release has: ${esc(r.available_units.join(', '))}</p>`:''}`;
+  }
+
+  const bnd=r.binding?`<div class="kv">
+      <div>binding</div><div>${esc(r.binding.binding_id)} · ${esc(r.binding.confidence)}</div>
+      <div>publisher node</div><div>${esc(Object.entries(r.binding.publisher_selector).map(([k,v])=>k+': '+v).join(' · '))}</div>
+      <div>release</div><div>${esc(r.release_id)} · ${esc(r.release_digest)}</div>
+      <div>policy</div><div>${esc(r.binding_policy_version)}</div></div>`:'';
+
+  $('#out').innerHTML=`<div class="ans ${esc(st)}">
+      <div class="st">${esc(st)}</div><h2>${esc(HEAD[st]||st)}</h2>
+      <p style="margin-top:4px">${esc(q.methodology)} · asked for <span class="mono">${esc(q.want_gas)} per ${esc(q.want_unit)}</span></p>
+      ${body}${bnd}
+      <details><summary>Full response</summary><pre>${esc(JSON.stringify(r,null,2))}</pre></details>
+    </div>`;
+}
+</script>
+</body>
+</html>
